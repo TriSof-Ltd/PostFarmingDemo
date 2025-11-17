@@ -33,6 +33,11 @@ const routeConfig: Record<string, { title: string; breadcrumb: string; descripti
     breadcrumb: 'Calendar',
     description: 'Schedule and manage your social media posts across Instagram, Facebook, and TikTok with our calendar view.'
   },
+  '/calendar': { 
+    title: 'Calendar - Post Farming', 
+    breadcrumb: 'Calendar',
+    description: 'Schedule and manage your social media posts across Instagram, Facebook, and TikTok with our calendar view.'
+  },
   '/inbox': { 
     title: 'Unified Inbox - Post Farming', 
     breadcrumb: 'Inbox',
@@ -69,6 +74,7 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Calendar} />
+      <Route path="/calendar" component={Calendar} />
       <Route path="/inbox" component={Inbox} />
       <Route path="/connections" component={Connections} />
       <Route path="/analytics" component={Analytics} />

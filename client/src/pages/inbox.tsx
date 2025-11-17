@@ -61,6 +61,28 @@ export default function Inbox() {
       return true;
     });
 
+  const handleAISuggestion = () => {
+    if (!selectedComment) return;
+
+    const suggestions = [
+      `Thanks for your comment! We're thrilled you enjoyed it. Stay tuned for more great content coming soon!`,
+      `We appreciate your feedback! Check out our latest updates on our profile.`,
+      `Thank you for the support! Make sure to follow us for exclusive updates and behind-the-scenes content.`,
+      `Great question! We'll be sharing more details about this very soon. Thanks for your interest!`,
+      `We love hearing from you! Your support means the world to us. More exciting content on the way!`,
+      `Thanks so much for reaching out! We'll get back to you with more information shortly.`,
+      `Appreciate your engagement! We have some exciting announcements coming up that you won't want to miss.`,
+    ];
+
+    const randomSuggestion = suggestions[Math.floor(Math.random() * suggestions.length)];
+    setReplyText(randomSuggestion);
+
+    toast({
+      title: 'AI Suggestion Generated',
+      description: 'You can edit the suggestion before sending',
+    });
+  };
+
   const handleReply = () => {
     if (!replyText.trim() || !selectedCommentId) return;
 
@@ -289,7 +311,7 @@ export default function Inbox() {
                     data-testid="textarea-reply"
                   />
                   <div className="flex items-center justify-between">
-                    <Button variant="outline" size="sm" data-testid="button-ai-suggest">
+                    <Button variant="outline" size="sm" onClick={handleAISuggestion} data-testid="button-ai-suggest">
                       <MessageCircle className="mr-2 h-4 w-4" />
                       AI Suggestion
                     </Button>
