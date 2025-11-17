@@ -58,10 +58,11 @@ export interface PlatformMetrics {
 
 export interface Comment {
   id: string;
+  clientId: string;
   platform: Platform;
   postId: string;
   author: string;
-  authorAvatar: string;
+  avatar: string;
   content: string;
   createdAt: Date;
   replies: Reply[];

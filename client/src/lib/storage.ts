@@ -125,6 +125,26 @@ export function addComment(state: AppState, comment: Comment): AppState {
   return newState;
 }
 
+export function addReplyToComment(state: AppState, commentId: string, reply: { content: string; isAI?: boolean }): AppState {
+  const newReply = {
+    id: `reply-${Date.now()}`,
+    content: reply.content,
+    createdAt: new Date(),
+    isAI: reply.isAI || false,
+  };
+
+  const newState = {
+    ...state,
+    comments: state.comments.map(comment =>
+      comment.id === commentId
+        ? { ...comment, replies: [...comment.replies, newReply] }
+        : comment
+    ),
+  };
+  saveAppState(newState);
+  return newState;
+}
+
 export function switchClient(state: AppState, clientId: string): AppState {
   const newState = {
     ...state,

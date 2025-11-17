@@ -15,6 +15,7 @@ import { Separator } from "@/components/ui/separator";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 
 import Calendar from "@/pages/calendar";
+import Inbox from "@/pages/inbox";
 import Connections from "@/pages/connections";
 import Analytics from "@/pages/analytics";
 import Clients from "@/pages/clients";
@@ -28,6 +29,11 @@ const routeConfig: Record<string, { title: string; breadcrumb: string; descripti
     title: 'Calendar - Post Farming', 
     breadcrumb: 'Calendar',
     description: 'Schedule and manage your social media posts across Instagram, Facebook, and TikTok with our calendar view.'
+  },
+  '/inbox': { 
+    title: 'Unified Inbox - Post Farming', 
+    breadcrumb: 'Inbox',
+    description: 'Manage and respond to comments from all your social media platforms in one unified inbox.'
   },
   '/connections': { 
     title: 'Connections - Post Farming', 
@@ -60,6 +66,7 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Calendar} />
+      <Route path="/inbox" component={Inbox} />
       <Route path="/connections" component={Connections} />
       <Route path="/analytics" component={Analytics} />
       <Route path="/clients" component={Clients} />

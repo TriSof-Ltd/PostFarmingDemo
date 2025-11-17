@@ -1,4 +1,4 @@
-import { Calendar, Link as LinkIcon, BarChart3, Users, Settings, MessageSquare, Shield } from "lucide-react";
+import { Calendar, Link as LinkIcon, BarChart3, Users, Settings, MessageSquare, Shield, Inbox } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import {
   Sidebar,
@@ -19,6 +19,11 @@ const menuItems = [
     icon: Calendar,
   },
   {
+    title: "Inbox",
+    url: "/inbox",
+    icon: Inbox,
+  },
+  {
     title: "Connections",
     url: "/connections",
     icon: LinkIcon,
@@ -27,6 +32,11 @@ const menuItems = [
     title: "Analytics",
     url: "/analytics",
     icon: BarChart3,
+  },
+  {
+    title: "Security",
+    url: "/security",
+    icon: Shield,
   },
   {
     title: "Clients",
@@ -42,12 +52,8 @@ const menuItems = [
 
 const comingSoonItems = [
   {
-    title: "Comments",
-    icon: MessageSquare,
-  },
-  {
     title: "Campaigns",
-    icon: Shield,
+    icon: MessageSquare,
   },
 ];
 

@@ -8,7 +8,8 @@ import {
   addPost as addPostToStorage, 
   updateClient as updateClientInStorage, 
   addClient as addClientToStorage,
-  deleteClient as deleteClientFromStorage 
+  deleteClient as deleteClientFromStorage,
+  addReplyToComment as addReplyToCommentInStorage
 } from './storage';
 
 interface AppContextType {
@@ -19,6 +20,7 @@ interface AppContextType {
   updateClient: (client: Client) => void;
   addClient: (client: Client) => void;
   deleteClient: (clientId: string) => void;
+  addReplyToComment: (commentId: string, reply: { content: string; isAI?: boolean }) => void;
   refreshAnalytics: () => void;
 }
 
@@ -54,6 +56,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setState(newState);
   };
 
+  const addReplyToComment = (commentId: string, reply: { content: string; isAI?: boolean }) => {
+    const newState = addReplyToCommentInStorage(state, commentId, reply);
+    setState(newState);
+  };
+
   const refreshAnalytics = () => {
     // Simulate analytics refresh with slight random variation
     const variation = () => Math.floor(Math.random() * 20) - 10;
@@ -70,7 +77,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AppContext.Provider value={{ state, currentClient, switchClient, addPost, updateClient, addClient, deleteClient, refreshAnalytics }}>
+    <AppContext.Provider value={{ state, currentClient, switchClient, addPost, updateClient, addClient, deleteClient, addReplyToComment, refreshAnalytics }}>
       {children}
     </AppContext.Provider>
   );
