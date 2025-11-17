@@ -5,7 +5,9 @@ import {
   saveAppState, 
   getCurrentClient, 
   switchClient as switchClientInStorage, 
-  addPost as addPostToStorage, 
+  addPost as addPostToStorage,
+  updatePost as updatePostInStorage,
+  deletePost as deletePostFromStorage,
   updateClient as updateClientInStorage, 
   addClient as addClientToStorage,
   deleteClient as deleteClientFromStorage,
@@ -17,6 +19,8 @@ interface AppContextType {
   currentClient: Client | undefined;
   switchClient: (clientId: string) => void;
   addPost: (post: Post) => void;
+  updatePost: (post: Post) => void;
+  deletePost: (postId: string) => void;
   updateClient: (client: Client) => void;
   addClient: (client: Client) => void;
   deleteClient: (clientId: string) => void;
@@ -38,6 +42,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const addPost = (post: Post) => {
     const newState = addPostToStorage(state, post);
+    setState(newState);
+  };
+
+  const updatePost = (post: Post) => {
+    const newState = updatePostInStorage(state, post);
+    setState(newState);
+  };
+
+  const deletePost = (postId: string) => {
+    const newState = deletePostFromStorage(state, postId);
     setState(newState);
   };
 
@@ -77,7 +91,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AppContext.Provider value={{ state, currentClient, switchClient, addPost, updateClient, addClient, deleteClient, addReplyToComment, refreshAnalytics }}>
+    <AppContext.Provider value={{ state, currentClient, switchClient, addPost, updatePost, deletePost, updateClient, addClient, deleteClient, addReplyToComment, refreshAnalytics }}>
       {children}
     </AppContext.Provider>
   );

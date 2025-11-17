@@ -131,14 +131,16 @@ export function CreatePostModal({ open, onOpenChange }: CreatePostModalProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto" data-testid="modal-create-post">
+      <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto" data-testid="modal-create-post">
         <DialogHeader>
           <DialogTitle className="text-2xl font-semibold">Create Post</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-6">
-          {/* Platform Selection */}
-          <div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Left Side - Form */}
+          <div className="space-y-6">
+            {/* Platform Selection */}
+            <div>
             <Label className="text-sm font-medium mb-3 block">Select Accounts</Label>
             <div className="flex gap-4">
               {connectedAccounts.map((account) => {
@@ -172,10 +174,10 @@ export function CreatePostModal({ open, onOpenChange }: CreatePostModalProps) {
                 );
               })}
             </div>
-          </div>
+            </div>
 
-          {/* Content */}
-          <div>
+            {/* Content */}
+            <div>
             <Label htmlFor="content" className="text-sm font-medium mb-2 block">
               What would you like to share?
             </Label>
@@ -187,10 +189,10 @@ export function CreatePostModal({ open, onOpenChange }: CreatePostModalProps) {
               className="min-h-[150px] resize-none"
               data-testid="input-post-content"
             />
-          </div>
+            </div>
 
-          {/* Image Upload */}
-          <div>
+            {/* Image Upload */}
+            <div>
             <Label className="text-sm font-medium mb-2 block">Media</Label>
             {imagePreview ? (
               <div className="relative">
@@ -223,10 +225,10 @@ export function CreatePostModal({ open, onOpenChange }: CreatePostModalProps) {
                 />
               </label>
             )}
-          </div>
+            </div>
 
-          {/* Schedule */}
-          <div className="flex gap-4">
+            {/* Schedule */}
+            <div className="flex gap-4">
             <div className="flex-1">
               <Label className="text-sm font-medium mb-2 block">Schedule Date</Label>
               <Popover>
@@ -254,10 +256,10 @@ export function CreatePostModal({ open, onOpenChange }: CreatePostModalProps) {
                 data-testid="input-time"
               />
             </div>
-          </div>
+            </div>
 
-          {/* Actions */}
-          <div className="flex gap-3 justify-end pt-4 border-t">
+            {/* Actions */}
+            <div className="flex gap-3 justify-end pt-4 border-t">
             <Button variant="outline" onClick={() => onOpenChange(false)} data-testid="button-cancel">
               Cancel
             </Button>
@@ -268,6 +270,112 @@ export function CreatePostModal({ open, onOpenChange }: CreatePostModalProps) {
             <Button onClick={handleSchedule} data-testid="button-schedule-post">
               Schedule Post
             </Button>
+            </div>
+          </div>
+
+          {/* Right Side - Platform Previews */}
+          <div className="space-y-6">
+          <div>
+            <h3 className="text-lg font-semibold mb-4">Preview</h3>
+            {selectedPlatforms.length === 0 ? (
+              <div className="flex items-center justify-center h-full min-h-[400px] text-center p-8 border-2 border-dashed border-border rounded-lg">
+                <div>
+                  <p className="text-muted-foreground">Select platforms to see preview</p>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {selectedPlatforms.includes('instagram') && (
+                  <div className="border rounded-lg overflow-hidden bg-background" data-testid="preview-instagram">
+                    <div className="p-3 border-b">
+                      <div className="flex items-center gap-2">
+                        <Avatar className="h-8 w-8">
+                          <AvatarImage src={connectedAccounts.find(a => a.platform === 'instagram')?.avatar} />
+                          <AvatarFallback>IG</AvatarFallback>
+                        </Avatar>
+                        <span className="font-semibold text-sm">
+                          {connectedAccounts.find(a => a.platform === 'instagram')?.username}
+                        </span>
+                      </div>
+                    </div>
+                    {imagePreview && (
+                      <div className="aspect-square bg-muted">
+                        <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                      </div>
+                    )}
+                    <div className="p-3">
+                      <p className="text-sm whitespace-pre-wrap">
+                        <span className="font-semibold mr-1">
+                          {connectedAccounts.find(a => a.platform === 'instagram')?.username}
+                        </span>
+                        {content || 'Your post content will appear here...'}
+                      </p>
+                    </div>
+                    <div className="px-3 pb-3 text-xs text-muted-foreground">Instagram Preview</div>
+                  </div>
+                )}
+
+                {selectedPlatforms.includes('facebook') && (
+                  <div className="border rounded-lg overflow-hidden bg-background" data-testid="preview-facebook">
+                    <div className="p-3">
+                      <div className="flex items-center gap-2 mb-3">
+                        <Avatar className="h-10 w-10">
+                          <AvatarImage src={connectedAccounts.find(a => a.platform === 'facebook')?.avatar} />
+                          <AvatarFallback>FB</AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <div className="font-semibold text-sm">
+                            {connectedAccounts.find(a => a.platform === 'facebook')?.username}
+                          </div>
+                          <div className="text-xs text-muted-foreground">Just now</div>
+                        </div>
+                      </div>
+                      <p className="text-sm whitespace-pre-wrap mb-3">
+                        {content || 'Your post content will appear here...'}
+                      </p>
+                    </div>
+                    {imagePreview && (
+                      <div className="bg-muted">
+                        <img src={imagePreview} alt="Preview" className="w-full object-cover max-h-96" />
+                      </div>
+                    )}
+                    <div className="px-3 pb-3 pt-2 text-xs text-muted-foreground">Facebook Preview</div>
+                  </div>
+                )}
+
+                {selectedPlatforms.includes('tiktok') && (
+                  <div className="border rounded-lg overflow-hidden bg-black text-white" data-testid="preview-tiktok">
+                    <div className="relative">
+                      {imagePreview ? (
+                        <div className="aspect-[9/16] max-h-[500px] bg-black">
+                          <img src={imagePreview} alt="Preview" className="w-full h-full object-contain" />
+                        </div>
+                      ) : (
+                        <div className="aspect-[9/16] max-h-[500px] bg-gradient-to-br from-gray-800 to-black flex items-center justify-center">
+                          <span className="text-white/50">Video Preview</span>
+                        </div>
+                      )}
+                      <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Avatar className="h-8 w-8 border-2 border-white">
+                            <AvatarImage src={connectedAccounts.find(a => a.platform === 'tiktok')?.avatar} />
+                            <AvatarFallback>TT</AvatarFallback>
+                          </Avatar>
+                          <span className="font-semibold text-sm">
+                            @{connectedAccounts.find(a => a.platform === 'tiktok')?.username}
+                          </span>
+                        </div>
+                        <p className="text-sm whitespace-pre-wrap">
+                          {content || 'Your post content will appear here...'}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="px-3 pb-3 pt-2 text-xs text-white/50">TikTok Preview</div>
+                  </div>
+                )}
+              </div>
+            )}
+            </div>
           </div>
         </div>
       </DialogContent>

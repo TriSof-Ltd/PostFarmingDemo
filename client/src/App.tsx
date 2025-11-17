@@ -22,6 +22,9 @@ import Clients from "@/pages/clients";
 import Settings from "@/pages/settings";
 import Security from "@/pages/security";
 import SecurityDetail from "@/pages/security-detail";
+import AuthFacebook from "@/pages/auth-facebook";
+import AuthInstagram from "@/pages/auth-instagram";
+import AuthTikTok from "@/pages/auth-tiktok";
 import NotFound from "@/pages/not-found";
 
 const routeConfig: Record<string, { title: string; breadcrumb: string; description: string }> = {
@@ -73,6 +76,9 @@ function Router() {
       <Route path="/settings" component={Settings} />
       <Route path="/security" component={Security} />
       <Route path="/security/:id" component={SecurityDetail} />
+      <Route path="/auth/facebook" component={AuthFacebook} />
+      <Route path="/auth/instagram" component={AuthInstagram} />
+      <Route path="/auth/tiktok" component={AuthTikTok} />
       <Route component={NotFound} />
     </Switch>
   );

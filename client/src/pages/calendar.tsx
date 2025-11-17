@@ -4,6 +4,7 @@ import { useApp } from '@/lib/AppContext';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { CreatePostModal } from '@/components/create-post-modal';
+import { PostDetailModal } from '@/components/post-detail-modal';
 import {
   Select,
   SelectContent,
@@ -18,6 +19,8 @@ export default function Calendar() {
   const { state, currentClient } = useApp();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [selectedPost, setSelectedPost] = useState<Post | null>(null);
+  const [isPostDetailOpen, setIsPostDetailOpen] = useState(false);
 
   if (!currentClient) {
     return (
@@ -52,6 +55,11 @@ export default function Calendar() {
     facebook: 'bg-blue-500',
     instagram: 'bg-pink-500',
     tiktok: 'bg-black',
+  };
+
+  const handlePostClick = (post: Post) => {
+    setSelectedPost(post);
+    setIsPostDetailOpen(true);
   };
 
   return (
@@ -118,6 +126,7 @@ export default function Calendar() {
                   {posts.map((post) => (
                     <div
                       key={post.id}
+                      onClick={() => handlePostClick(post)}
                       className="text-xs p-1.5 rounded bg-accent hover-elevate cursor-pointer truncate"
                       data-testid={`post-${post.id}`}
                     >
@@ -140,6 +149,7 @@ export default function Calendar() {
       </Card>
 
       <CreatePostModal open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen} />
+      <PostDetailModal post={selectedPost} open={isPostDetailOpen} onOpenChange={setIsPostDetailOpen} />
     </div>
   );
 }

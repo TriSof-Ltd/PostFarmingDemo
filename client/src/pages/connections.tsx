@@ -22,53 +22,6 @@ export default function Connections() {
     );
   }
 
-  const handleConnect = (platform: Platform) => {
-    // Simulate OAuth connection
-    toast({
-      title: 'Connecting...',
-      description: `Opening ${platform} authentication...`,
-    });
-
-    setTimeout(() => {
-      const newAccount = {
-        id: `${currentClient.id}-${platform}-${Date.now()}`,
-        platform,
-        username: `${platform}_user_${Math.floor(Math.random() * 10000)}`,
-        avatar: `https://api.dicebear.com/7.x/shapes/svg?seed=${platform}${Date.now()}`,
-        isConnected: true,
-        connectedAt: new Date(),
-      };
-
-      const existingAccountIndex = currentClient.connectedAccounts.findIndex(
-        (acc) => acc.platform === platform
-      );
-
-      let updatedAccounts;
-      if (existingAccountIndex >= 0) {
-        // Update existing account
-        updatedAccounts = [...currentClient.connectedAccounts];
-        updatedAccounts[existingAccountIndex] = {
-          ...updatedAccounts[existingAccountIndex],
-          isConnected: true,
-          connectedAt: new Date(),
-        };
-      } else {
-        // Add new account
-        updatedAccounts = [...currentClient.connectedAccounts, newAccount];
-      }
-
-      updateClient({
-        ...currentClient,
-        connectedAccounts: updatedAccounts,
-      });
-
-      toast({
-        title: 'Connected!',
-        description: `Successfully connected ${platform} account`,
-      });
-    }, 1500);
-  };
-
   const handleDisconnect = (accountId: string) => {
     const updatedAccounts = currentClient.connectedAccounts.map((acc) =>
       acc.id === accountId ? { ...acc, isConnected: false } : acc
@@ -183,10 +136,12 @@ export default function Connections() {
                 ) : (
                   <Button
                     className="w-full"
-                    onClick={() => handleConnect(platformInfo.platform)}
+                    asChild
                     data-testid={`button-connect-${platformInfo.platform}`}
                   >
-                    Connect
+                    <Link href={`/auth/${platformInfo.platform}`}>
+                      Connect
+                    </Link>
                   </Button>
                 )}
               </CardContent>
