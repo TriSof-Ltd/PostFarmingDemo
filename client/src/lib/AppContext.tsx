@@ -1,0 +1,85 @@
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import type { AppState, Client, Post, Comment } from './types';
+import { 
+  loadAppState, 
+  saveAppState, 
+  getCurrentClient, 
+  switchClient as switchClientInStorage, 
+  addPost as addPostToStorage, 
+  updateClient as updateClientInStorage, 
+  addClient as addClientToStorage,
+  deleteClient as deleteClientFromStorage 
+} from './storage';
+
+interface AppContextType {
+  state: AppState;
+  currentClient: Client | undefined;
+  switchClient: (clientId: string) => void;
+  addPost: (post: Post) => void;
+  updateClient: (client: Client) => void;
+  addClient: (client: Client) => void;
+  deleteClient: (clientId: string) => void;
+  refreshAnalytics: () => void;
+}
+
+const AppContext = createContext<AppContextType | undefined>(undefined);
+
+export function AppProvider({ children }: { children: ReactNode }) {
+  const [state, setState] = useState<AppState>(loadAppState());
+
+  const currentClient = getCurrentClient(state);
+
+  const switchClient = (clientId: string) => {
+    const newState = switchClientInStorage(state, clientId);
+    setState(newState);
+  };
+
+  const addPost = (post: Post) => {
+    const newState = addPostToStorage(state, post);
+    setState(newState);
+  };
+
+  const updateClient = (client: Client) => {
+    const newState = updateClientInStorage(state, client);
+    setState(newState);
+  };
+
+  const addClient = (client: Client) => {
+    const newState = addClientToStorage(state, client);
+    setState(newState);
+  };
+
+  const deleteClient = (clientId: string) => {
+    const newState = deleteClientFromStorage(state, clientId);
+    setState(newState);
+  };
+
+  const refreshAnalytics = () => {
+    // Simulate analytics refresh with slight random variation
+    const variation = () => Math.floor(Math.random() * 20) - 10;
+    const newState = {
+      ...state,
+      analytics: {
+        ...state.analytics,
+        totalViews: Math.max(0, state.analytics.totalViews + variation()),
+        totalLikes: Math.max(0, state.analytics.totalLikes + Math.floor(variation() / 5)),
+      },
+    };
+    setState(newState);
+    saveAppState(newState);
+  };
+
+  return (
+    <AppContext.Provider value={{ state, currentClient, switchClient, addPost, updateClient, addClient, deleteClient, refreshAnalytics }}>
+      {children}
+    </AppContext.Provider>
+  );
+}
+
+export function useApp() {
+  const context = useContext(AppContext);
+  if (!context) {
+    throw new Error('useApp must be used within AppProvider');
+  }
+  return context;
+}
