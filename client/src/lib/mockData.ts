@@ -1,42 +1,42 @@
 import type { AppState, Client, Post, Comment, SecurityEvent, ClientHealth, Analytics } from './types';
 
 const clientLogos = [
-  'https://api.dicebear.com/7.x/initials/svg?seed=T&backgroundColor=ef4444',
-  'https://api.dicebear.com/7.x/initials/svg?seed=A&backgroundColor=3b82f6',
-  'https://api.dicebear.com/7.x/initials/svg?seed=AP&backgroundColor=06b6d4',
+  '/the-social-shepherd.jpeg',
+  '/social-chain.png',
+  '/we-are-social.png',
 ];
 
 export function generateMockData(): AppState {
   const clients: Client[] = [
     {
       id: '1',
-      name: 'Tesla',
+      name: 'The Social Shepherd',
       logo: clientLogos[0],
-      email: 'marketing@tesla.co',
-      phone: '07450245053',
-      description: 'Tesla Test',
+      email: 'hello@thesocialshepherd.com',
+      phone: '+1 (555) 123-4567',
+      description: 'Leading social media management agency specializing in brand growth and engagement',
       connectedAccounts: [
         {
           id: '1-fb',
           platform: 'facebook',
-          username: 'TriSof Test Page',
-          avatar: 'https://api.dicebear.com/7.x/shapes/svg?seed=fb',
+          username: 'The Social Shepherd',
+          avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=TheSocialShepherd&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf',
           isConnected: true,
           connectedAt: new Date('2024-11-01'),
         },
         {
           id: '1-ig',
           platform: 'instagram',
-          username: 'uhakdt2025',
-          avatar: 'https://api.dicebear.com/7.x/shapes/svg?seed=ig',
+          username: 'thesocialshepherd',
+          avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=thesocialshepherd&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf',
           isConnected: true,
           connectedAt: new Date('2024-11-01'),
         },
         {
           id: '1-tt',
           platform: 'tiktok',
-          username: 'uhakdt',
-          avatar: 'https://api.dicebear.com/7.x/shapes/svg?seed=tt',
+          username: '@thesocialshepherd',
+          avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=thesocialshepherd_tiktok&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf',
           isConnected: true,
           connectedAt: new Date('2024-11-01'),
         },
@@ -44,20 +44,20 @@ export function generateMockData(): AppState {
     },
     {
       id: '2',
-      name: 'Asiacell',
+      name: 'Social Chain',
       logo: clientLogos[1],
-      email: 'contact@asiacell.com',
-      phone: '1212312313',
-      description: 'Asiacell Test',
+      email: 'contact@socialchain.com',
+      phone: '+1 (555) 234-5678',
+      description: 'Innovative social media solutions connecting brands with their audiences',
       connectedAccounts: [],
     },
     {
       id: '3',
-      name: 'Apple',
+      name: 'We Are Social',
       logo: clientLogos[2],
-      email: 'test@gmail.com',
-      phone: '1212312313',
-      description: 'this is a test test loadn..',
+      email: 'info@wearesocial.com',
+      phone: '+1 (555) 345-6789',
+      description: 'Global creative agency delivering social-first campaigns and strategies',
       connectedAccounts: [],
     },
   ];

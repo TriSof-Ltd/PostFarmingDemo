@@ -1,13 +1,22 @@
-import { Eye, Heart, MessageCircle, Share2, ChevronRight, RefreshCw } from 'lucide-react';
+import { useState } from 'react';
+import { Eye, Heart, MessageCircle, Share2, ChevronRight, RefreshCw, FileText, Calendar as CalendarIcon } from 'lucide-react';
 import { SiFacebook, SiInstagram, SiTiktok } from 'react-icons/si';
 import { useApp } from '@/lib/AppContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { format } from 'date-fns';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
 
 export default function Analytics() {
   const { state, currentClient, refreshAnalytics } = useApp();
   const { analytics } = state;
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  const [fromDate, setFromDate] = useState<Date>();
+  const [toDate, setToDate] = useState<Date>();
 
   if (!currentClient) {
     return (
@@ -79,6 +88,18 @@ export default function Analytics() {
     { name: 'Sun', views: 290, likes: 71, comments: 27 },
   ];
 
+  const handleGenerateReport = () => {
+    if (!fromDate || !toDate) {
+      return;
+    }
+    // Open the PDF in a new tab
+    window.open('/report.pdf', '_blank');
+    setIsReportModalOpen(false);
+    // Reset dates
+    setFromDate(undefined);
+    setToDate(undefined);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -86,11 +107,93 @@ export default function Analytics() {
           <h1 className="text-3xl font-semibold">Analytics</h1>
           <p className="text-muted-foreground mt-1">Track your social media performance</p>
         </div>
-        <Button variant="outline" onClick={refreshAnalytics} data-testid="button-refresh">
-          <RefreshCw className="mr-2 h-4 w-4" />
-          Refresh
-        </Button>
+        <div className="flex gap-3">
+          <Button variant="outline" onClick={() => setIsReportModalOpen(true)} data-testid="button-generate-report">
+            <FileText className="mr-2 h-4 w-4" />
+            Generate Report
+          </Button>
+          <Button variant="outline" onClick={refreshAnalytics} data-testid="button-refresh">
+            <RefreshCw className="mr-2 h-4 w-4" />
+            Refresh
+          </Button>
+        </div>
       </div>
+
+      {/* Generate Report Modal */}
+      <Dialog open={isReportModalOpen} onOpenChange={setIsReportModalOpen}>
+        <DialogContent className="sm:max-w-[500px]" data-testid="modal-generate-report">
+          <DialogHeader>
+            <DialogTitle>Generate Report</DialogTitle>
+            <DialogDescription>
+              Choose the data to generate a report on
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-6 py-4">
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="from-date">From Date</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      id="from-date"
+                      variant="outline"
+                      className="w-full justify-start text-left font-normal"
+                      data-testid="button-from-date"
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {fromDate ? format(fromDate, 'PPP') : 'Pick a date'}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={fromDate}
+                      onSelect={setFromDate}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="to-date">To Date</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      id="to-date"
+                      variant="outline"
+                      className="w-full justify-start text-left font-normal"
+                      data-testid="button-to-date"
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {toDate ? format(toDate, 'PPP') : 'Pick a date'}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={toDate}
+                      onSelect={setToDate}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+            </div>
+            <div className="flex justify-end gap-3 pt-4 border-t">
+              <Button variant="outline" onClick={() => setIsReportModalOpen(false)} data-testid="button-cancel-report">
+                Cancel
+              </Button>
+              <Button
+                onClick={handleGenerateReport}
+                disabled={!fromDate || !toDate}
+                data-testid="button-generate-report-submit"
+              >
+                Generate Report
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Metric Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
