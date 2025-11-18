@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
-import { Eye, Heart, MessageCircle, Share2, RefreshCw, FileText, Calendar as CalendarIcon, TrendingUp, TrendingDown, Sparkles, Filter } from 'lucide-react';
+import { Eye, Heart, MessageCircle, Share2, RefreshCw, FileText, Calendar as CalendarIcon, TrendingUp, TrendingDown, Sparkles, Filter, Copy, ArrowRight, ChevronRight } from 'lucide-react';
 import { SiFacebook, SiInstagram, SiTiktok } from 'react-icons/si';
 import { useApp } from '@/lib/AppContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -50,7 +50,14 @@ const translations: Record<Language, Record<string, string>> = {
     basicOverallStatistics: 'Basic Overall Statistics',
     basicStatistics: 'Basic Statistics',
     viewStats: 'View stats & generate report',
+    viewDetails: 'View details',
     all: 'All',
+    dateRange: 'Date range',
+    contentType: 'Content type',
+    performanceOverview: 'Performance Overview',
+    performanceOverviewSubtitle: 'Across selected platforms & date range',
+    copyInsight: 'Copy insight',
+    addToReport: 'Add to report',
     posts: 'Posts',
     stories: 'Stories',
     reels: 'Reels',
@@ -92,7 +99,14 @@ const translations: Record<Language, Record<string, string>> = {
     basicOverallStatistics: 'ئامارە بنەڕەتییەکانی گشتی',
     basicStatistics: 'ئامارە بنەڕەتییەکان',
     viewStats: 'بینینی ئامار و دروستکردنی راپۆرت',
+    viewDetails: 'بینینی وردەکارییەکان',
     all: 'هەموو',
+    dateRange: 'ماوەی بڕیار',
+    contentType: 'جۆری ناوەڕۆک',
+    performanceOverview: 'نیشاندانی کارکردن',
+    performanceOverviewSubtitle: 'لە پلاتفۆرم و ماوەی بڕیار هەڵبژێردراو',
+    copyInsight: 'لەبەرگرتنەوەی بینین',
+    addToReport: 'زیادکردن بۆ راپۆرت',
     posts: 'پۆست',
     stories: 'چیرۆک',
     reels: 'ریڵ',
@@ -134,7 +148,14 @@ const translations: Record<Language, Record<string, string>> = {
     basicOverallStatistics: 'الإحصائيات الأساسية الشاملة',
     basicStatistics: 'الإحصائيات الأساسية',
     viewStats: 'عرض الإحصائيات وإنشاء تقرير',
+    viewDetails: 'عرض التفاصيل',
     all: 'الكل',
+    dateRange: 'نطاق التاريخ',
+    contentType: 'نوع المحتوى',
+    performanceOverview: 'نظرة عامة على الأداء',
+    performanceOverviewSubtitle: 'عبر المنصات ونطاق التاريخ المحدد',
+    copyInsight: 'نسخ الرؤية',
+    addToReport: 'إضافة إلى التقرير',
     posts: 'المنشورات',
     stories: 'القصص',
     reels: 'الريلز',
@@ -580,10 +601,10 @@ export default function Analytics() {
           <p className="text-muted-foreground mt-1">{t.trackPerformance}</p>
         </div>
         <div className="flex gap-3">
-          <Button variant="outline" onClick={refreshAnalytics} data-testid="button-refresh">
-            <RefreshCw className="mr-2 h-4 w-4" />
+        <Button variant="outline" onClick={refreshAnalytics} data-testid="button-refresh">
+          <RefreshCw className="mr-2 h-4 w-4" />
             {t.refresh}
-          </Button>
+        </Button>
         </div>
       </div>
 
@@ -592,18 +613,29 @@ export default function Analytics() {
         {platformFilterCards.map((platformCard) => {
           const Icon = platformCard.icon;
           const isActive = platformFilter === platformCard.id;
+          const isAll = platformCard.id === 'all';
+          
+          // Get micro-metric for platform cards
+          const getMicroMetric = () => {
+            if (platformCard.id === 'all') return null;
+            const platformData = analytics.byPlatform[platformCard.id as 'facebook' | 'instagram' | 'tiktok'];
+            const metric = platformCard.id === 'instagram' 
+              ? (platformData.reach || platformData.views)
+              : platformData.views;
+            return metric.toLocaleString();
+          };
           
           return (
             <Card
               key={platformCard.id}
-              className={`cursor-pointer transition-all hover-elevate ${
+              className={`cursor-pointer transition-all ${
                 isActive
-                  ? 'ring-2 ring-primary bg-primary/5 border-primary'
-                  : 'hover:border-primary/50'
+                  ? 'ring-2 ring-primary bg-primary/10 border-primary shadow-md'
+                  : 'hover:shadow-md hover:border-primary/50 hover:-translate-y-0.5'
               }`}
               onClick={() => setPlatformFilter(platformCard.id)}
             >
-              <CardHeader>
+              <CardHeader className="pb-3">
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-3">
                     {Icon ? (
@@ -626,106 +658,133 @@ export default function Analytics() {
                 </div>
                 <p className="text-sm text-muted-foreground">{t.viewStats}</p>
               </CardHeader>
-              <CardContent>
-                <Button
-                  className="w-full"
-                  variant={isActive ? 'default' : 'outline'}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    generateReport(platformCard.id);
-                  }}
-                >
-                  <FileText className="mr-2 h-4 w-4" />
-                  {platformCard.generateReportLabel}
-                </Button>
+              <CardContent className="pt-0">
+                {isAll ? (
+                  <Button
+                    className="w-full"
+                    variant="default"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      generateReport(platformCard.id);
+                    }}
+                  >
+                    <FileText className="mr-2 h-4 w-4" />
+                    {platformCard.generateReportLabel}
+                  </Button>
+                ) : (
+                  <div className="space-y-2">
+                    <Button
+                      className="w-full"
+                      variant="outline"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        generateReport(platformCard.id);
+                      }}
+                    >
+                      <FileText className="mr-2 h-3 w-3" />
+                      {platformCard.generateReportLabel}
+                    </Button>
+                    <div className="flex items-center justify-between text-xs text-muted-foreground pt-1">
+                      <span>Top this period:</span>
+                      <span className="font-semibold">{getMicroMetric()} {platformCard.id === 'instagram' ? t.reach : t.views}</span>
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           );
         })}
       </div>
 
-      {/* Date Range Selector */}
-                <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Button
-            variant={dateRange === 'today' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => handleDateRangeChange('today')}
-          >
-            {t.today}
-          </Button>
-          <Button
-            variant={dateRange === '7days' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => handleDateRangeChange('7days')}
-          >
-            {t.last7Days}
-          </Button>
-          <Button
-            variant={dateRange === '30days' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => handleDateRangeChange('30days')}
-          >
-            {t.last30Days}
-          </Button>
-          <Button
-            variant={dateRange === 'custom' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => handleDateRangeChange('custom')}
-          >
-            {t.custom}
-          </Button>
-          {dateRange === 'custom' && (
-            <div className="flex items-center gap-2 ml-4">
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" size="sm" className="w-[140px] justify-start">
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {fromDate ? format(fromDate, 'MMM d') : 'From'}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
-                  <Calendar mode="single" selected={fromDate} onSelect={setFromDate} initialFocus />
-                </PopoverContent>
-              </Popover>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" size="sm" className="w-[140px] justify-start">
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {toDate ? format(toDate, 'MMM d') : 'To'}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
-                  <Calendar mode="single" selected={toDate} onSelect={setToDate} initialFocus />
-                </PopoverContent>
-              </Popover>
-            </div>
-          )}
-        </div>
-        <div className="text-sm text-muted-foreground">
-          {format(dateRangeInfo.start, 'MMM d')} - {format(dateRangeInfo.end, 'MMM d, yyyy')}
-        </div>
-      </div>
-
-      {/* Content Type Filter */}
-      <div className="flex items-center gap-2">
-        <Filter className="h-4 w-4 text-muted-foreground" />
-        {availableContentTypes.map((type) => {
-          // Map 'videos' to appropriate label for TikTok
-          const label = type === 'videos' && platformFilter === 'tiktok' 
-            ? 'Videos' 
-            : t[type as keyof typeof t];
-          return (
+      {/* Filters Group */}
+      <div className="grid gap-4 md:grid-cols-2">
+        {/* Date Range Filter */}
+        <Card className="p-4">
+          <Label className="text-xs font-medium text-muted-foreground mb-3 block">{t.dateRange}</Label>
+          <div className="flex items-center gap-2 flex-wrap">
             <Button
-              key={type}
-              variant={contentType === type ? 'default' : 'outline'}
+              variant={dateRange === 'today' ? 'default' : 'outline'}
               size="sm"
-              onClick={() => setContentType(type)}
+              onClick={() => handleDateRangeChange('today')}
             >
-              {label}
+              {t.today}
             </Button>
-          );
-        })}
+            <Button
+              variant={dateRange === '7days' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => handleDateRangeChange('7days')}
+            >
+              {t.last7Days}
+            </Button>
+            <Button
+              variant={dateRange === '30days' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => handleDateRangeChange('30days')}
+            >
+              {t.last30Days}
+            </Button>
+            <Button
+              variant={dateRange === 'custom' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => handleDateRangeChange('custom')}
+            >
+              {t.custom}
+            </Button>
+            {dateRange === 'custom' && (
+              <div className="flex items-center gap-2 ml-2">
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" size="sm" className="w-[120px] justify-start">
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {fromDate ? format(fromDate, 'MMM d') : 'From'}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0">
+                    <Calendar mode="single" selected={fromDate} onSelect={setFromDate} initialFocus />
+                  </PopoverContent>
+                </Popover>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" size="sm" className="w-[120px] justify-start">
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {toDate ? format(toDate, 'MMM d') : 'To'}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0">
+                    <Calendar mode="single" selected={toDate} onSelect={setToDate} initialFocus />
+                  </PopoverContent>
+                </Popover>
+              </div>
+            )}
+          </div>
+          <div className="text-xs text-muted-foreground mt-2">
+            {format(dateRangeInfo.start, 'MMM d')} - {format(dateRangeInfo.end, 'MMM d, yyyy')}
+          </div>
+        </Card>
+
+        {/* Content Type Filter */}
+        <Card className="p-4">
+          <Label className="text-xs font-medium text-muted-foreground mb-3 block">{t.contentType}</Label>
+          <div className="flex items-center gap-2 flex-wrap">
+            {availableContentTypes.map((type) => {
+              // Map 'videos' to appropriate label for TikTok
+              const label = type === 'videos' && platformFilter === 'tiktok' 
+                ? 'Videos' 
+                : t[type as keyof typeof t];
+          return (
+                <Button
+                  key={type}
+                  variant={contentType === type ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setContentType(type)}
+                >
+                  {label}
+                </Button>
+              );
+            })}
+          </div>
+        </Card>
       </div>
 
       {/* Generate Report Modal */}
@@ -801,18 +860,14 @@ export default function Analytics() {
             const { change, isPositive } = metric.change;
             return (
               <Card key={metric.title} className="hover-elevate">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 pt-4">
                   <CardTitle className="text-sm font-medium text-muted-foreground">{metric.title}</CardTitle>
-                  <Icon className={`h-5 w-5 ${metric.color}`} />
+                  <Icon className={`h-4 w-4 ${metric.color}`} />
                 </CardHeader>
-                <CardContent>
-                  <div className="text-3xl font-bold mb-1">{metric.value.toLocaleString()}</div>
-                  <div className={`flex items-center gap-1 text-xs ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
-                    {isPositive ? (
-                      <TrendingUp className="h-3 w-3" />
-                    ) : (
-                      <TrendingDown className="h-3 w-3" />
-                    )}
+                <CardContent className="pt-2 pb-4">
+                  <div className="text-2xl font-bold mb-1">{metric.value.toLocaleString()}</div>
+                  <div className={`flex items-center gap-1 text-xs font-medium ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
+                    <span>{isPositive ? '↑' : '↓'}</span>
                     <span>{Math.abs(change)}% {getComparisonLabel()}</span>
                 </div>
               </CardContent>
@@ -820,25 +875,32 @@ export default function Analytics() {
           );
         })}
       </div>
+      </div>
 
+      {/* Performance Overview Section */}
+      <div className="space-y-4">
+        <div>
+          <h2 className="text-xl font-semibold">{t.performanceOverview}</h2>
+          <p className="text-sm text-muted-foreground mt-1">{t.performanceOverviewSubtitle}</p>
+        </div>
 
-      {/* Charts */}
+        {/* Charts */}
       <div className="grid gap-6 md:grid-cols-2">
         <Card>
-          <CardHeader>
+            <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
-                <CardTitle>{t.engagementOverTime}</CardTitle>
-                <div className="flex gap-2">
-                  <Toggle pressed={chartMetrics.views} onPressedChange={() => toggleChartMetric('views')} size="sm">
+                <CardTitle className="text-base">{t.engagementOverTime}</CardTitle>
+                <div className="flex gap-1">
+                  <Toggle pressed={chartMetrics.views} onPressedChange={() => toggleChartMetric('views')} size="sm" className="text-xs px-2">
                     {platformFilter === 'all' ? t.views : platformMetrics.views}
                   </Toggle>
-                  <Toggle pressed={chartMetrics.reach} onPressedChange={() => toggleChartMetric('reach')} size="sm">
+                  <Toggle pressed={chartMetrics.reach} onPressedChange={() => toggleChartMetric('reach')} size="sm" className="text-xs px-2">
                     {platformMetrics.reach}
                   </Toggle>
-                  <Toggle pressed={chartMetrics.likes} onPressedChange={() => toggleChartMetric('likes')} size="sm">
+                  <Toggle pressed={chartMetrics.likes} onPressedChange={() => toggleChartMetric('likes')} size="sm" className="text-xs px-2">
                     {platformMetrics.likes}
                   </Toggle>
-                  <Toggle pressed={chartMetrics.comments} onPressedChange={() => toggleChartMetric('comments')} size="sm">
+                  <Toggle pressed={chartMetrics.comments} onPressedChange={() => toggleChartMetric('comments')} size="sm" className="text-xs px-2">
                     {platformMetrics.comments}
                   </Toggle>
                 </div>
@@ -878,11 +940,11 @@ export default function Analytics() {
         </Card>
 
         <Card>
-          <CardHeader>
+          <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
-                <CardTitle>{t.platformComparison}</CardTitle>
+                <CardTitle className="text-base">{t.platformComparison}</CardTitle>
                 <Select value={selectedMetric} onValueChange={(v) => setSelectedMetric(v as MetricType)}>
-                  <SelectTrigger className="w-[140px]">
+                  <SelectTrigger className="w-[140px] h-8 text-xs">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -956,19 +1018,67 @@ export default function Analytics() {
 
         {/* AI Insights Box */}
         <Card className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950 dark:to-purple-950 border-blue-200 dark:border-blue-800">
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-blue-600" />
-              <CardTitle className="text-lg">{t.aiInsights}</CardTitle>
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="text-xl">🧠</span>
+                <CardTitle className="text-lg">{t.aiInsights}</CardTitle>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-xs"
+                  onClick={() => {
+                    const insightText = platformFilter === 'all' 
+                      ? `This week: ${t.instagram} drove 87% of engagement. Best performing day: Friday. Suggested: post more Reels on Thu–Fri 18:00–21:00.`
+                      : `Best performing day: Friday. Suggested: post more ${platformFilter === 'tiktok' ? 'videos' : 'Reels'} on Thu–Fri 18:00–21:00.`;
+                    navigator.clipboard.writeText(insightText);
+                  }}
+                >
+                  <Copy className="mr-1 h-3 w-3" />
+                  {t.copyInsight}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-xs"
+                >
+                  {t.addToReport}
+                </Button>
+              </div>
             </div>
           </CardHeader>
           <CardContent>
-            <p className="text-sm">
-              {platformFilter === 'all' 
-                ? `This week: ${t.instagram} drove 87% of engagement. Best performing day: Friday. Suggested: post more Reels on Thu–Fri 18:00–21:00.`
-                : `Best performing day: Friday. Suggested: post more ${platformFilter === 'tiktok' ? 'videos' : 'Reels'} on Thu–Fri 18:00–21:00.`
-              }
-            </p>
+            <ul className="space-y-2 text-sm">
+              {platformFilter === 'all' ? (
+                <>
+                  <li className="flex items-start gap-2">
+                    <span className="text-blue-600 mt-0.5">•</span>
+                    <span>This week: <strong>{t.instagram}</strong> drove <strong>87%</strong> of engagement.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-blue-600 mt-0.5">•</span>
+                    <span>Best performing day: <strong>Friday</strong>.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-blue-600 mt-0.5">•</span>
+                    <span>Suggested: post more <strong>Reels</strong> on <strong>Thu–Fri 18:00–21:00</strong>.</span>
+                  </li>
+                </>
+              ) : (
+                <>
+                  <li className="flex items-start gap-2">
+                    <span className="text-blue-600 mt-0.5">•</span>
+                    <span>Best performing day: <strong>Friday</strong>.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-blue-600 mt-0.5">•</span>
+                    <span>Suggested: post more <strong>{platformFilter === 'tiktok' ? 'videos' : 'Reels'}</strong> on <strong>Thu–Fri 18:00–21:00</strong>.</span>
+                  </li>
+                </>
+              )}
+            </ul>
           </CardContent>
         </Card>
       </div>
