@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Eye, Heart, MessageCircle, Share2, ChevronRight, RefreshCw, FileText, Calendar as CalendarIcon } from 'lucide-react';
+import { useState, useMemo, useEffect } from 'react';
+import { Eye, Heart, MessageCircle, Share2, RefreshCw, FileText, Calendar as CalendarIcon, TrendingUp, TrendingDown, Sparkles, Filter } from 'lucide-react';
 import { SiFacebook, SiInstagram, SiTiktok } from 'react-icons/si';
 import { useApp } from '@/lib/AppContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,15 +8,360 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Label } from '@/components/ui/label';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { format } from 'date-fns';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Toggle } from '@/components/ui/toggle';
+import { format, subDays, startOfDay, endOfDay, differenceInDays } from 'date-fns';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, Legend } from 'recharts';
+
+type DateRange = 'today' | '7days' | '30days' | 'custom';
+type Language = 'en' | 'ku' | 'ar';
+type ContentType = 'all' | 'posts' | 'stories' | 'reels' | 'ads' | 'videos';
+type MetricType = 'reach' | 'likes' | 'comments' | 'shares' | 'impressions' | 'views' | 'saves';
+type PlatformFilter = 'all' | 'instagram' | 'facebook' | 'tiktok';
+
+const translations: Record<Language, Record<string, string>> = {
+  en: {
+    analytics: 'Analytics',
+    trackPerformance: 'Track your social media performance',
+    generateReport: 'Generate Report',
+    generateAllReport: 'Generate All Report',
+    generateInstagramReport: 'Generate Instagram Report',
+    generateFacebookReport: 'Generate Facebook Report',
+    generateTiktokReport: 'Generate TikTok Report',
+    refresh: 'Refresh',
+    export: 'Export',
+    downloadPDF: 'Download PDF report',
+    shareLink: 'Share link with client',
+    views: 'Views',
+    reach: 'Reach',
+    likes: 'Likes',
+    comments: 'Comments',
+    shares: 'Shares',
+    total: 'Total',
+    today: 'Today',
+    last7Days: '7 days',
+    last30Days: '30 days',
+    custom: 'Custom',
+    vsLastWeek: 'vs last week',
+    vsLastMonth: 'vs last month',
+    engagementOverTime: 'Engagement Over Time',
+    platformComparison: 'Platform Comparison',
+    aiInsights: 'AI Insights',
+    basicOverallStatistics: 'Basic Overall Statistics',
+    basicStatistics: 'Basic Statistics',
+    viewStats: 'View stats & generate report',
+    all: 'All',
+    posts: 'Posts',
+    stories: 'Stories',
+    reels: 'Reels',
+    ads: 'Ads',
+    videos: 'Videos',
+    impressions: 'Impressions',
+    saves: 'Saves',
+    facebook: 'Facebook',
+    instagram: 'Instagram',
+    tiktok: 'TikTok',
+  },
+  ku: {
+    analytics: 'شیکردنەوە',
+    trackPerformance: 'شیکردنەوەی کارکردنی میدیای کۆمەڵایەتی',
+    generateReport: 'دروستکردنی راپۆرت',
+    generateAllReport: 'دروستکردنی راپۆرتی هەموو',
+    generateInstagramReport: 'دروستکردنی راپۆرتی ئینستاگرام',
+    generateFacebookReport: 'دروستکردنی راپۆرتی فەیسبووک',
+    generateTiktokReport: 'دروستکردنی راپۆرتی تیکتۆک',
+    refresh: 'نوێکردنەوە',
+    export: 'دەرهێنان',
+    downloadPDF: 'داگرتنی راپۆرتی PDF',
+    shareLink: 'هاوبەشکردنی لینک لەگەڵ کڕیار',
+    views: 'بینین',
+    reach: 'گەیشتن',
+    likes: 'پێدەوەستن',
+    comments: 'کۆمێنت',
+    shares: 'هاوبەشکردن',
+    total: 'کۆی گشتی',
+    today: 'ئەمڕۆ',
+    last7Days: '٧ ڕۆژ',
+    last30Days: '٣٠ ڕۆژ',
+    custom: 'تایبەت',
+    vsLastWeek: 'بەراورد لەگەڵ هەفتەی پێشوو',
+    vsLastMonth: 'بەراورد لەگەڵ مانگی پێشوو',
+    engagementOverTime: 'بەشداری بە درێژایی کات',
+    platformComparison: 'بەراوردی پلاتفۆرم',
+    aiInsights: 'بینینی AI',
+    basicOverallStatistics: 'ئامارە بنەڕەتییەکانی گشتی',
+    basicStatistics: 'ئامارە بنەڕەتییەکان',
+    viewStats: 'بینینی ئامار و دروستکردنی راپۆرت',
+    all: 'هەموو',
+    posts: 'پۆست',
+    stories: 'چیرۆک',
+    reels: 'ریڵ',
+    ads: 'ریکلام',
+    videos: 'ڤیدیۆ',
+    impressions: 'بەرچاوکەوتن',
+    saves: 'پاشەکەوت',
+    facebook: 'فەیسبووک',
+    instagram: 'ئینستاگرام',
+    tiktok: 'تیکتۆک',
+  },
+  ar: {
+    analytics: 'التحليلات',
+    trackPerformance: 'تتبع أداء وسائل التواصل الاجتماعي',
+    generateReport: 'إنشاء تقرير',
+    generateAllReport: 'إنشاء تقرير شامل',
+    generateInstagramReport: 'إنشاء تقرير إنستغرام',
+    generateFacebookReport: 'إنشاء تقرير فيسبوك',
+    generateTiktokReport: 'إنشاء تقرير تيك توك',
+    refresh: 'تحديث',
+    export: 'تصدير',
+    downloadPDF: 'تحميل تقرير PDF',
+    shareLink: 'مشاركة رابط مع العميل',
+    views: 'المشاهدات',
+    reach: 'الوصول',
+    likes: 'الإعجابات',
+    comments: 'التعليقات',
+    shares: 'المشاركات',
+    total: 'المجموع',
+    today: 'اليوم',
+    last7Days: '٧ أيام',
+    last30Days: '٣٠ يوم',
+    custom: 'مخصص',
+    vsLastWeek: 'مقارنة بالأسبوع الماضي',
+    vsLastMonth: 'مقارنة بالشهر الماضي',
+    engagementOverTime: 'التفاعل بمرور الوقت',
+    platformComparison: 'مقارنة المنصات',
+    aiInsights: 'رؤى الذكاء الاصطناعي',
+    basicOverallStatistics: 'الإحصائيات الأساسية الشاملة',
+    basicStatistics: 'الإحصائيات الأساسية',
+    viewStats: 'عرض الإحصائيات وإنشاء تقرير',
+    all: 'الكل',
+    posts: 'المنشورات',
+    stories: 'القصص',
+    reels: 'الريلز',
+    ads: 'الإعلانات',
+    videos: 'الفيديوهات',
+    impressions: 'الانطباعات',
+    saves: 'الحفظ',
+    facebook: 'فيسبوك',
+    instagram: 'إنستغرام',
+    tiktok: 'تيك توك',
+  },
+};
+
+// Content type multipliers (used for calculations)
+const contentTypeMultipliers: Record<ContentType, number> = {
+  all: 1,
+  posts: 0.6,
+  stories: 0.3,
+  reels: 0.8,
+  ads: 0.5,
+  videos: 0.7, // TikTok videos
+};
+
+// Platform capabilities - which content types each platform supports
+const platformCapabilities: Record<PlatformFilter, ContentType[]> = {
+  all: ['all', 'posts', 'stories', 'reels', 'ads', 'videos'],
+  instagram: ['all', 'posts', 'stories', 'reels', 'ads'], // Instagram: Posts, Stories, Reels, Ads
+  facebook: ['all', 'posts', 'stories', 'reels', 'ads'], // Facebook: Posts, Stories, Reels, Ads
+  tiktok: ['all', 'videos', 'reels', 'ads'], // TikTok: Videos (main content), Reels, Ads (no Stories, no Posts)
+};
+
+// Platform-specific metric terminology
+const getPlatformMetrics = (platform: PlatformFilter) => {
+  if (platform === 'instagram') {
+    return {
+      views: 'Impressions',
+      reach: 'Reach',
+      likes: 'Likes',
+      comments: 'Comments',
+      shares: 'Saves', // Instagram uses "Saves" instead of "Shares"
+    };
+  }
+  if (platform === 'facebook') {
+    return {
+      views: 'Impressions',
+      reach: 'Reach',
+      likes: 'Likes',
+      comments: 'Comments',
+      shares: 'Shares',
+    };
+  }
+  if (platform === 'tiktok') {
+    return {
+      views: 'Views',
+      reach: 'Reach',
+      likes: 'Likes',
+      comments: 'Comments',
+      shares: 'Shares',
+    };
+  }
+  // All platforms - use generic terms
+  return {
+    views: 'Views',
+    reach: 'Reach',
+    likes: 'Likes',
+    comments: 'Comments',
+    shares: 'Shares',
+  };
+};
+
+// Generate dynamic dummy data based on filters
+const generateDummyData = (
+  dateRange: DateRange,
+  contentType: ContentType,
+  platformFilter: PlatformFilter,
+  fromDate?: Date,
+  toDate?: Date
+) => {
+  // Base multipliers for different date ranges
+  const dateMultipliers: Record<DateRange, number> = {
+    today: 0.15,
+    '7days': 1,
+    '30days': 4.2,
+    custom: fromDate && toDate ? differenceInDays(toDate, fromDate) / 7 : 1,
+  };
+
+  const multiplier = dateMultipliers[dateRange] * contentTypeMultipliers[contentType];
+
+  // Generate platform-specific data with some variation
+  const baseFacebook = {
+    views: Math.round(51 * multiplier),
+    likes: Math.round(1 * multiplier),
+    comments: Math.round(0 * multiplier),
+    shares: Math.round(0 * multiplier),
+  };
+
+  const baseInstagram = {
+    views: Math.round(519 * multiplier),
+    reach: Math.round(570 * multiplier),
+    likes: Math.round(8 * multiplier),
+    comments: Math.round(0 * multiplier),
+    shares: Math.round(0 * multiplier),
+  };
+
+  const baseTiktok = {
+    views: Math.round(0 * multiplier),
+    likes: Math.round(0 * multiplier),
+    comments: Math.round(0 * multiplier),
+    shares: Math.round(0 * multiplier),
+  };
+
+  // Add some randomness for demo
+  const addRandomness = (value: number, variance: number = 0.1) => {
+    return Math.max(0, Math.round(value * (1 + (Math.random() - 0.5) * variance)));
+  };
+
+  // Filter by platform
+  if (platformFilter === 'facebook') {
+    return {
+      totalViews: addRandomness(baseFacebook.views),
+      totalLikes: addRandomness(baseFacebook.likes),
+      totalComments: addRandomness(baseFacebook.comments),
+      totalShares: addRandomness(baseFacebook.shares),
+      byPlatform: {
+        facebook: {
+          views: addRandomness(baseFacebook.views),
+          likes: addRandomness(baseFacebook.likes),
+          comments: addRandomness(baseFacebook.comments),
+          shares: addRandomness(baseFacebook.shares),
+        },
+        instagram: { views: 0, reach: 0, likes: 0, comments: 0, shares: 0 },
+        tiktok: { views: 0, likes: 0, comments: 0, shares: 0 },
+      },
+    };
+  }
+
+  if (platformFilter === 'instagram') {
+    return {
+      totalViews: addRandomness(baseInstagram.views),
+      totalLikes: addRandomness(baseInstagram.likes),
+      totalComments: addRandomness(baseInstagram.comments),
+      totalShares: addRandomness(baseInstagram.shares),
+      byPlatform: {
+        facebook: { views: 0, likes: 0, comments: 0, shares: 0 },
+        instagram: {
+          views: addRandomness(baseInstagram.views),
+          reach: addRandomness(baseInstagram.reach),
+          likes: addRandomness(baseInstagram.likes),
+          comments: addRandomness(baseInstagram.comments),
+          shares: addRandomness(baseInstagram.shares),
+        },
+        tiktok: { views: 0, likes: 0, comments: 0, shares: 0 },
+      },
+    };
+  }
+
+  if (platformFilter === 'tiktok') {
+    return {
+      totalViews: addRandomness(baseTiktok.views),
+      totalLikes: addRandomness(baseTiktok.likes),
+      totalComments: addRandomness(baseTiktok.comments),
+      totalShares: addRandomness(baseTiktok.shares),
+      byPlatform: {
+        facebook: { views: 0, likes: 0, comments: 0, shares: 0 },
+        instagram: { views: 0, reach: 0, likes: 0, comments: 0, shares: 0 },
+        tiktok: {
+          views: addRandomness(baseTiktok.views),
+          likes: addRandomness(baseTiktok.likes),
+          comments: addRandomness(baseTiktok.comments),
+          shares: addRandomness(baseTiktok.shares),
+        },
+      },
+    };
+  }
+
+  // All platforms
+  return {
+    totalViews: addRandomness(baseFacebook.views + baseInstagram.views + baseTiktok.views),
+    totalLikes: addRandomness(baseFacebook.likes + baseInstagram.likes + baseTiktok.likes),
+    totalComments: addRandomness(baseFacebook.comments + baseInstagram.comments + baseTiktok.comments),
+    totalShares: addRandomness(baseFacebook.shares + baseInstagram.shares + baseTiktok.shares),
+    byPlatform: {
+      facebook: {
+        views: addRandomness(baseFacebook.views),
+        likes: addRandomness(baseFacebook.likes),
+        comments: addRandomness(baseFacebook.comments),
+        shares: addRandomness(baseFacebook.shares),
+      },
+      instagram: {
+        views: addRandomness(baseInstagram.views),
+        reach: addRandomness(baseInstagram.reach),
+        likes: addRandomness(baseInstagram.likes),
+        comments: addRandomness(baseInstagram.comments),
+        shares: addRandomness(baseInstagram.shares),
+      },
+      tiktok: {
+        views: addRandomness(baseTiktok.views),
+        likes: addRandomness(baseTiktok.likes),
+        comments: addRandomness(baseTiktok.comments),
+        shares: addRandomness(baseTiktok.shares),
+      },
+    },
+  };
+};
 
 export default function Analytics() {
-  const { state, currentClient, refreshAnalytics } = useApp();
-  const { analytics } = state;
+  const { state, currentClient, refreshAnalytics, language } = useApp();
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [fromDate, setFromDate] = useState<Date>();
   const [toDate, setToDate] = useState<Date>();
+  const [dateRange, setDateRange] = useState<DateRange>('7days');
+  const [contentType, setContentType] = useState<ContentType>('all');
+  const [selectedMetric, setSelectedMetric] = useState<MetricType>('reach');
+  const [platformFilter, setPlatformFilter] = useState<PlatformFilter>('all');
+  const [chartMetrics, setChartMetrics] = useState({
+    views: true,
+    reach: true,
+    likes: true,
+    comments: true,
+  });
+
+  const t = translations[language];
+
+  // Generate dynamic analytics data based on filters
+  const analytics = useMemo(() => {
+    return generateDummyData(dateRange, contentType, platformFilter, fromDate, toDate);
+  }, [dateRange, contentType, platformFilter, fromDate, toDate]);
 
   if (!currentClient) {
     return (
@@ -27,103 +372,367 @@ export default function Analytics() {
     );
   }
 
+  // Calculate date range
+  const getDateRange = () => {
+    const now = new Date();
+    switch (dateRange) {
+      case 'today':
+        return { start: startOfDay(now), end: endOfDay(now), label: t.today };
+      case '7days':
+        return { start: startOfDay(subDays(now, 7)), end: endOfDay(now), label: t.last7Days };
+      case '30days':
+        return { start: startOfDay(subDays(now, 30)), end: endOfDay(now), label: t.last30Days };
+      default:
+        return { start: fromDate || startOfDay(subDays(now, 7)), end: toDate || endOfDay(now), label: t.custom };
+    }
+  };
+
+  const dateRangeInfo = getDateRange();
+
+  // Calculate previous period data for comparison
+  const getPreviousPeriodData = useMemo(() => {
+    const prevDateRange = dateRange === 'today' ? '7days' : dateRange === '7days' ? '30days' : '30days';
+    return generateDummyData(prevDateRange, contentType, platformFilter, fromDate, toDate);
+  }, [dateRange, contentType, platformFilter, fromDate, toDate]);
+
+  const getPreviousPeriodChange = (current: number, previous: number) => {
+    if (previous === 0) {
+      return { change: current > 0 ? 100 : 0, isPositive: current > 0, previousValue: 0 };
+    }
+    const change = Math.round(((current - previous) / previous) * 100);
+    const isPositive = change >= 0;
+    return { change: Math.abs(change), isPositive, previousValue: previous };
+  };
+
+  // Calculate totals
+  const totalReach = analytics.byPlatform.facebook.views + 
+    (analytics.byPlatform.instagram.reach || analytics.byPlatform.instagram.views) + 
+    analytics.byPlatform.tiktok.views;
+  
+  const prevTotalReach = getPreviousPeriodData.byPlatform.facebook.views + 
+    (getPreviousPeriodData.byPlatform.instagram.reach || getPreviousPeriodData.byPlatform.instagram.views) + 
+    getPreviousPeriodData.byPlatform.tiktok.views;
+
+  const totalEngagement = analytics.totalLikes + analytics.totalComments + analytics.totalShares;
+  const totalPosts = Math.max(1, Math.round(12 * (dateRange === 'today' ? 0.1 : dateRange === '7days' ? 1 : dateRange === '30days' ? 4 : 1) * contentTypeMultipliers[contentType]));
+  const avgEngagementRate = totalReach > 0 ? ((totalEngagement / totalReach) * 100).toFixed(1) : '0';
+
+  // Get platform-specific metric labels
+  const platformMetrics = getPlatformMetrics(platformFilter);
+
   const metricCards = [
     {
-      title: 'Views',
+      title: platformFilter === 'all' ? t.views : platformMetrics.views,
       value: analytics.totalViews,
       icon: Eye,
       color: 'text-blue-500',
+      change: getPreviousPeriodChange(analytics.totalViews, getPreviousPeriodData.totalViews),
     },
     {
-      title: 'Likes',
+      title: platformMetrics.reach,
+      value: totalReach,
+      icon: Eye,
+      color: 'text-indigo-500',
+      change: getPreviousPeriodChange(totalReach, prevTotalReach),
+    },
+    {
+      title: platformMetrics.likes,
       value: analytics.totalLikes,
       icon: Heart,
       color: 'text-pink-500',
+      change: getPreviousPeriodChange(analytics.totalLikes, getPreviousPeriodData.totalLikes),
     },
     {
-      title: 'Comments',
+      title: platformMetrics.comments,
       value: analytics.totalComments,
       icon: MessageCircle,
       color: 'text-green-500',
+      change: getPreviousPeriodChange(analytics.totalComments, getPreviousPeriodData.totalComments),
     },
     {
-      title: 'Shares',
+      title: platformMetrics.shares,
       value: analytics.totalShares,
       icon: Share2,
       color: 'text-purple-500',
+      change: getPreviousPeriodChange(analytics.totalShares, getPreviousPeriodData.totalShares),
     },
   ];
 
-  const platformData = [
-    {
-      name: 'Facebook',
-      platform: 'facebook',
-      icon: SiFacebook,
-      color: '#1877F2',
-      metrics: analytics.byPlatform.facebook,
-    },
-    {
-      name: 'Instagram',
-      platform: 'instagram',
-      icon: SiInstagram,
-      color: '#E4405F',
-      metrics: analytics.byPlatform.instagram,
-    },
-    {
-      name: 'TikTok',
-      platform: 'tiktok',
-      icon: SiTiktok,
-      color: '#000000',
-      metrics: analytics.byPlatform.tiktok,
-    },
-  ];
-
-  const chartData = [
-    { name: 'Mon', views: 120, likes: 45, comments: 12 },
-    { name: 'Tue', views: 280, likes: 78, comments: 23 },
-    { name: 'Wed', views: 190, likes: 52, comments: 18 },
-    { name: 'Thu', views: 320, likes: 89, comments: 31 },
-    { name: 'Fri', views: 410, likes: 112, comments: 42 },
-    { name: 'Sat', views: 380, likes: 98, comments: 38 },
-    { name: 'Sun', views: 290, likes: 71, comments: 27 },
-  ];
+  // Generate chart data based on date range and platform filter
+  const chartData = useMemo(() => {
+    const days = dateRange === 'today' ? 1 : dateRange === '7days' ? 7 : dateRange === '30days' ? 30 : (fromDate && toDate ? differenceInDays(toDate, fromDate) : 7);
+    const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    const multiplier = contentTypeMultipliers[contentType];
+    
+    // Adjust base values based on platform filter
+    let baseMultiplier = 1;
+    if (platformFilter === 'instagram') baseMultiplier = 10;
+    else if (platformFilter === 'facebook') baseMultiplier = 1;
+    else if (platformFilter === 'tiktok') baseMultiplier = 0.5;
+    
+    return Array.from({ length: Math.min(days, 7) }, (_, i) => {
+      const baseViews = (50 + Math.random() * 100) * multiplier * baseMultiplier;
+      const baseReach = baseViews * 1.2;
+      const baseLikes = baseViews * 0.15;
+      const baseComments = baseViews * 0.05;
+      
+      return {
+        name: dayNames[i % 7],
+        views: Math.round(baseViews),
+        reach: Math.round(baseReach),
+        likes: Math.round(baseLikes),
+        comments: Math.round(baseComments),
+      };
+    });
+  }, [dateRange, contentType, fromDate, toDate, platformFilter]);
 
   const handleGenerateReport = () => {
     if (!fromDate || !toDate) {
       return;
     }
-    // Open the PDF in a new tab
     window.open('/report.pdf', '_blank');
     setIsReportModalOpen(false);
-    // Reset dates
     setFromDate(undefined);
     setToDate(undefined);
   };
 
+  const generateReport = (platform: PlatformFilter) => {
+    // Stub function for report generation - can be connected to backend later
+    console.log(`Generating report for: ${platform}`);
+    // For demo, just open the PDF
+    window.open('/report.pdf', '_blank');
+  };
+
+  const toggleChartMetric = (metric: keyof typeof chartMetrics) => {
+    setChartMetrics(prev => ({ ...prev, [metric]: !prev[metric] }));
+  };
+
+  const handleDateRangeChange = (range: DateRange) => {
+    setDateRange(range);
+    if (range !== 'custom') {
+      setFromDate(undefined);
+      setToDate(undefined);
+    }
+  };
+
+  const getComparisonLabel = () => {
+    if (dateRange === 'today') return t.vsLastWeek;
+    if (dateRange === '7days') return t.vsLastWeek;
+    return t.vsLastMonth;
+  };
+
+  // Get available content types for current platform
+  const availableContentTypes = platformCapabilities[platformFilter];
+
+  // Reset content type if current selection is not available for the platform
+  useEffect(() => {
+    if (!availableContentTypes.includes(contentType)) {
+      setContentType('all');
+    }
+  }, [platformFilter, availableContentTypes, contentType]);
+
+  // Platform filter cards data
+  const platformFilterCards = [
+    {
+      id: 'all' as PlatformFilter,
+      name: t.all,
+      icon: null,
+      color: '#6366f1',
+      generateReportLabel: t.generateAllReport,
+    },
+    {
+      id: 'instagram' as PlatformFilter,
+      name: t.instagram,
+      icon: SiInstagram,
+      color: '#E4405F',
+      generateReportLabel: t.generateInstagramReport,
+    },
+    {
+      id: 'facebook' as PlatformFilter,
+      name: t.facebook,
+      icon: SiFacebook,
+      color: '#1877F2',
+      generateReportLabel: t.generateFacebookReport,
+    },
+    {
+      id: 'tiktok' as PlatformFilter,
+      name: t.tiktok,
+      icon: SiTiktok,
+      color: '#000000',
+      generateReportLabel: t.generateTiktokReport,
+    },
+  ];
+
+  // Get statistics title based on platform filter
+  const getStatisticsTitle = () => {
+    if (platformFilter === 'all') {
+      return t.basicOverallStatistics;
+    }
+    return `${t.basicStatistics} – ${platformFilterCards.find(p => p.id === platformFilter)?.name}`;
+  };
+
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-semibold">Analytics</h1>
-          <p className="text-muted-foreground mt-1">Track your social media performance</p>
+          <h1 className="text-3xl font-semibold">{t.analytics}</h1>
+          <p className="text-muted-foreground mt-1">{t.trackPerformance}</p>
         </div>
         <div className="flex gap-3">
-          <Button variant="outline" onClick={() => setIsReportModalOpen(true)} data-testid="button-generate-report">
-            <FileText className="mr-2 h-4 w-4" />
-            Generate Report
-          </Button>
           <Button variant="outline" onClick={refreshAnalytics} data-testid="button-refresh">
             <RefreshCw className="mr-2 h-4 w-4" />
-            Refresh
+            {t.refresh}
           </Button>
         </div>
       </div>
 
+      {/* Platform Filter Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {platformFilterCards.map((platformCard) => {
+          const Icon = platformCard.icon;
+          const isActive = platformFilter === platformCard.id;
+          
+          return (
+            <Card
+              key={platformCard.id}
+              className={`cursor-pointer transition-all hover-elevate ${
+                isActive
+                  ? 'ring-2 ring-primary bg-primary/5 border-primary'
+                  : 'hover:border-primary/50'
+              }`}
+              onClick={() => setPlatformFilter(platformCard.id)}
+            >
+              <CardHeader>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-3">
+                    {Icon ? (
+                      <div
+                        className="h-10 w-10 rounded-lg flex items-center justify-center"
+                        style={{ backgroundColor: platformCard.color }}
+                      >
+                        <Icon className="h-5 w-5 text-white" />
+                      </div>
+                    ) : (
+                      <div
+                        className="h-10 w-10 rounded-lg flex items-center justify-center"
+                        style={{ backgroundColor: platformCard.color }}
+                      >
+                        <span className="text-white font-bold text-sm">ALL</span>
+                      </div>
+                    )}
+                    <CardTitle className="text-lg">{platformCard.name}</CardTitle>
+                  </div>
+                </div>
+                <p className="text-sm text-muted-foreground">{t.viewStats}</p>
+              </CardHeader>
+              <CardContent>
+                <Button
+                  className="w-full"
+                  variant={isActive ? 'default' : 'outline'}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    generateReport(platformCard.id);
+                  }}
+                >
+                  <FileText className="mr-2 h-4 w-4" />
+                  {platformCard.generateReportLabel}
+                </Button>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
+
+      {/* Date Range Selector */}
+                <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Button
+            variant={dateRange === 'today' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => handleDateRangeChange('today')}
+          >
+            {t.today}
+          </Button>
+          <Button
+            variant={dateRange === '7days' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => handleDateRangeChange('7days')}
+          >
+            {t.last7Days}
+          </Button>
+          <Button
+            variant={dateRange === '30days' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => handleDateRangeChange('30days')}
+          >
+            {t.last30Days}
+          </Button>
+          <Button
+            variant={dateRange === 'custom' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => handleDateRangeChange('custom')}
+          >
+            {t.custom}
+          </Button>
+          {dateRange === 'custom' && (
+            <div className="flex items-center gap-2 ml-4">
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" size="sm" className="w-[140px] justify-start">
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {fromDate ? format(fromDate, 'MMM d') : 'From'}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0">
+                  <Calendar mode="single" selected={fromDate} onSelect={setFromDate} initialFocus />
+                </PopoverContent>
+              </Popover>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" size="sm" className="w-[140px] justify-start">
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {toDate ? format(toDate, 'MMM d') : 'To'}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0">
+                  <Calendar mode="single" selected={toDate} onSelect={setToDate} initialFocus />
+                </PopoverContent>
+              </Popover>
+            </div>
+          )}
+        </div>
+        <div className="text-sm text-muted-foreground">
+          {format(dateRangeInfo.start, 'MMM d')} - {format(dateRangeInfo.end, 'MMM d, yyyy')}
+        </div>
+      </div>
+
+      {/* Content Type Filter */}
+      <div className="flex items-center gap-2">
+        <Filter className="h-4 w-4 text-muted-foreground" />
+        {availableContentTypes.map((type) => {
+          // Map 'videos' to appropriate label for TikTok
+          const label = type === 'videos' && platformFilter === 'tiktok' 
+            ? 'Videos' 
+            : t[type as keyof typeof t];
+          return (
+            <Button
+              key={type}
+              variant={contentType === type ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setContentType(type)}
+            >
+              {label}
+            </Button>
+          );
+        })}
+      </div>
+
       {/* Generate Report Modal */}
       <Dialog open={isReportModalOpen} onOpenChange={setIsReportModalOpen}>
-        <DialogContent className="sm:max-w-[500px]" data-testid="modal-generate-report">
+        <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
-            <DialogTitle>Generate Report</DialogTitle>
+            <DialogTitle>{t.generateReport}</DialogTitle>
             <DialogDescription>
               Choose the data to generate a report on
             </DialogDescription>
@@ -138,22 +747,16 @@ export default function Analytics() {
                       id="from-date"
                       variant="outline"
                       className="w-full justify-start text-left font-normal"
-                      data-testid="button-from-date"
                     >
                       <CalendarIcon className="mr-2 h-4 w-4" />
                       {fromDate ? format(fromDate, 'PPP') : 'Pick a date'}
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={fromDate}
-                      onSelect={setFromDate}
-                      initialFocus
-                    />
+                  <PopoverContent className="w-auto p-0">
+                    <Calendar mode="single" selected={fromDate} onSelect={setFromDate} initialFocus />
                   </PopoverContent>
                 </Popover>
-              </div>
+                    </div>
               <div className="space-y-2">
                 <Label htmlFor="to-date">To Date</Label>
                 <Popover>
@@ -162,116 +765,88 @@ export default function Analytics() {
                       id="to-date"
                       variant="outline"
                       className="w-full justify-start text-left font-normal"
-                      data-testid="button-to-date"
                     >
                       <CalendarIcon className="mr-2 h-4 w-4" />
                       {toDate ? format(toDate, 'PPP') : 'Pick a date'}
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={toDate}
-                      onSelect={setToDate}
-                      initialFocus
-                    />
+                  <PopoverContent className="w-auto p-0">
+                    <Calendar mode="single" selected={toDate} onSelect={setToDate} initialFocus />
                   </PopoverContent>
                 </Popover>
-              </div>
-            </div>
+                  </div>
+                </div>
             <div className="flex justify-end gap-3 pt-4 border-t">
-              <Button variant="outline" onClick={() => setIsReportModalOpen(false)} data-testid="button-cancel-report">
+              <Button variant="outline" onClick={() => setIsReportModalOpen(false)}>
                 Cancel
               </Button>
-              <Button
-                onClick={handleGenerateReport}
-                disabled={!fromDate || !toDate}
-                data-testid="button-generate-report-submit"
-              >
+              <Button onClick={handleGenerateReport} disabled={!fromDate || !toDate}>
                 Generate Report
               </Button>
-            </div>
-          </div>
+                    </div>
+                  </div>
         </DialogContent>
       </Dialog>
 
-      {/* Metric Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {metricCards.map((metric) => {
-          const Icon = metric.icon;
-          return (
-            <Card key={metric.title} data-testid={`card-metric-${metric.title.toLowerCase()}`}>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 gap-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">{metric.title}</CardTitle>
-                <Icon className={`h-5 w-5 ${metric.color}`} />
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold" data-testid={`value-${metric.title.toLowerCase()}`}>{metric.value}</div>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
+      {/* Main Statistics Section */}
+      <div className="space-y-6">
+                  <div>
+          <h2 className="text-2xl font-semibold mb-2">{getStatisticsTitle()}</h2>
+                  </div>
 
-      {/* Platform Breakdown */}
-      <div className="grid gap-6 md:grid-cols-3">
-        {platformData.map((platform) => {
-          const Icon = platform.icon;
-          const metrics = platform.metrics;
-
-          return (
-            <Card key={platform.platform} className="hover-elevate" data-testid={`card-platform-${platform.platform}`}>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div
-                      className="h-10 w-10 rounded-lg flex items-center justify-center"
-                      style={{ backgroundColor: platform.color }}
-                    >
-                      <Icon className="h-5 w-5 text-white" />
-                    </div>
-                    <CardTitle className="text-lg">{platform.name}</CardTitle>
-                  </div>
-                  <ChevronRight className="h-5 w-5 text-muted-foreground" />
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <div className="text-xs text-muted-foreground mb-1">
-                      {platform.platform === 'instagram' ? 'Reach' : 'Views'}
-                    </div>
-                    <div className="text-2xl font-bold" data-testid={`${platform.platform}-views`}>
-                      {platform.platform === 'instagram' ? metrics.reach : metrics.views}
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-xs text-muted-foreground mb-1">Likes</div>
-                    <div className="text-2xl font-bold" data-testid={`${platform.platform}-likes`}>{metrics.likes}</div>
-                  </div>
-                  <div>
-                    <div className="text-xs text-muted-foreground mb-1">Comments</div>
-                    <div className="text-2xl font-bold" data-testid={`${platform.platform}-comments`}>{metrics.comments}</div>
-                  </div>
-                  <div>
-                    <div className="text-xs text-muted-foreground mb-1">Shares</div>
-                    <div className="text-2xl font-bold" data-testid={`${platform.platform}-shares`}>{metrics.shares}</div>
-                  </div>
+        {/* Metric Cards with Change Indicators */}
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+          {metricCards.map((metric) => {
+            const Icon = metric.icon;
+            const { change, isPositive } = metric.change;
+            return (
+              <Card key={metric.title} className="hover-elevate">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">{metric.title}</CardTitle>
+                  <Icon className={`h-5 w-5 ${metric.color}`} />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-bold mb-1">{metric.value.toLocaleString()}</div>
+                  <div className={`flex items-center gap-1 text-xs ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
+                    {isPositive ? (
+                      <TrendingUp className="h-3 w-3" />
+                    ) : (
+                      <TrendingDown className="h-3 w-3" />
+                    )}
+                    <span>{Math.abs(change)}% {getComparisonLabel()}</span>
                 </div>
               </CardContent>
             </Card>
           );
         })}
       </div>
+
 
       {/* Charts */}
       <div className="grid gap-6 md:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Engagement Over Time</CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle>{t.engagementOverTime}</CardTitle>
+                <div className="flex gap-2">
+                  <Toggle pressed={chartMetrics.views} onPressedChange={() => toggleChartMetric('views')} size="sm">
+                    {platformFilter === 'all' ? t.views : platformMetrics.views}
+                  </Toggle>
+                  <Toggle pressed={chartMetrics.reach} onPressedChange={() => toggleChartMetric('reach')} size="sm">
+                    {platformMetrics.reach}
+                  </Toggle>
+                  <Toggle pressed={chartMetrics.likes} onPressedChange={() => toggleChartMetric('likes')} size="sm">
+                    {platformMetrics.likes}
+                  </Toggle>
+                  <Toggle pressed={chartMetrics.comments} onPressedChange={() => toggleChartMetric('comments')} size="sm">
+                    {platformMetrics.comments}
+                  </Toggle>
+                </div>
+              </div>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
+              <div style={{ width: '100%', height: '320px' }}>
+                <ResponsiveContainer width="100%" height="100%">
               <LineChart data={chartData}>
                 <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
                 <XAxis dataKey="name" className="text-xs" />
@@ -283,26 +858,83 @@ export default function Analytics() {
                     borderRadius: '8px',
                   }}
                 />
-                <Line type="monotone" dataKey="views" stroke="#3b82f6" strokeWidth={2} />
-                <Line type="monotone" dataKey="likes" stroke="#ec4899" strokeWidth={2} />
-                <Line type="monotone" dataKey="comments" stroke="#10b981" strokeWidth={2} />
+                    {chartMetrics.views && (
+                      <Line type="monotone" dataKey="views" stroke="#3b82f6" strokeWidth={2} name={platformFilter === 'all' ? t.views : platformMetrics.views} />
+                    )}
+                    {chartMetrics.reach && (
+                      <Line type="monotone" dataKey="reach" stroke="#8b5cf6" strokeWidth={2} name={platformMetrics.reach} />
+                    )}
+                    {chartMetrics.likes && (
+                      <Line type="monotone" dataKey="likes" stroke="#ec4899" strokeWidth={2} name={platformMetrics.likes} />
+                    )}
+                    {chartMetrics.comments && (
+                      <Line type="monotone" dataKey="comments" stroke="#10b981" strokeWidth={2} name={platformMetrics.comments} />
+                    )}
+                    <Legend />
               </LineChart>
             </ResponsiveContainer>
+              </div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>Platform Comparison</CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle>{t.platformComparison}</CardTitle>
+                <Select value={selectedMetric} onValueChange={(v) => setSelectedMetric(v as MetricType)}>
+                  <SelectTrigger className="w-[140px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="reach">{platformMetrics.reach}</SelectItem>
+                    <SelectItem value="likes">{platformMetrics.likes}</SelectItem>
+                    <SelectItem value="comments">{platformMetrics.comments}</SelectItem>
+                    <SelectItem value="shares">{platformMetrics.shares}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
+              <div style={{ width: '100%', height: '320px' }}>
+                <ResponsiveContainer width="100%" height="100%">
               <BarChart
-                data={[
-                  { name: 'Facebook', views: analytics.byPlatform.facebook.views, likes: analytics.byPlatform.facebook.likes },
-                  { name: 'Instagram', views: analytics.byPlatform.instagram.reach || analytics.byPlatform.instagram.views, likes: analytics.byPlatform.instagram.likes },
-                  { name: 'TikTok', views: analytics.byPlatform.tiktok.views, likes: analytics.byPlatform.tiktok.likes },
-                ]}
+                    data={
+                      platformFilter === 'all'
+                        ? [
+                            {
+                              name: t.facebook,
+                              reach: analytics.byPlatform.facebook.views,
+                              likes: analytics.byPlatform.facebook.likes,
+                              comments: analytics.byPlatform.facebook.comments,
+                              shares: analytics.byPlatform.facebook.shares,
+                            },
+                            {
+                              name: t.instagram,
+                              reach: analytics.byPlatform.instagram.reach || analytics.byPlatform.instagram.views,
+                              likes: analytics.byPlatform.instagram.likes,
+                              comments: analytics.byPlatform.instagram.comments,
+                              shares: analytics.byPlatform.instagram.shares,
+                            },
+                            {
+                              name: t.tiktok,
+                              reach: analytics.byPlatform.tiktok.views,
+                              likes: analytics.byPlatform.tiktok.likes,
+                              comments: analytics.byPlatform.tiktok.comments,
+                              shares: analytics.byPlatform.tiktok.shares,
+                            },
+                          ]
+                        : [
+                            {
+                              name: platformFilterCards.find(p => p.id === platformFilter)?.name || '',
+                              reach: platformFilter === 'instagram' 
+                                ? (analytics.byPlatform.instagram.reach || analytics.byPlatform.instagram.views)
+                                : analytics.byPlatform[platformFilter as 'facebook' | 'tiktok'].views,
+                              likes: analytics.byPlatform[platformFilter as 'facebook' | 'instagram' | 'tiktok'].likes,
+                              comments: analytics.byPlatform[platformFilter as 'facebook' | 'instagram' | 'tiktok'].comments,
+                              shares: analytics.byPlatform[platformFilter as 'facebook' | 'instagram' | 'tiktok'].shares,
+                            },
+                          ]
+                    }
               >
                 <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
                 <XAxis dataKey="name" className="text-xs" />
@@ -314,10 +946,29 @@ export default function Analytics() {
                     borderRadius: '8px',
                   }}
                 />
-                <Bar dataKey="views" fill="#3b82f6" />
-                <Bar dataKey="likes" fill="#ec4899" />
+                    <Bar dataKey={selectedMetric} fill="#3b82f6" />
               </BarChart>
             </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* AI Insights Box */}
+        <Card className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950 dark:to-purple-950 border-blue-200 dark:border-blue-800">
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-blue-600" />
+              <CardTitle className="text-lg">{t.aiInsights}</CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm">
+              {platformFilter === 'all' 
+                ? `This week: ${t.instagram} drove 87% of engagement. Best performing day: Friday. Suggested: post more Reels on Thu–Fri 18:00–21:00.`
+                : `Best performing day: Friday. Suggested: post more ${platformFilter === 'tiktok' ? 'videos' : 'Reels'} on Thu–Fri 18:00–21:00.`
+              }
+            </p>
           </CardContent>
         </Card>
       </div>

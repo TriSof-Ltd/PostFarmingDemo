@@ -1,17 +1,18 @@
 import { useState, useEffect } from "react";
 import { Switch, Route, useLocation } from "wouter";
-import { Plus } from "lucide-react";
+import { Plus, Languages } from "lucide-react";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { AppProvider } from "@/lib/AppContext";
+import { AppProvider, useApp } from "@/lib/AppContext";
 import { AppSidebar } from "@/components/app-sidebar";
 import { ClientSwitcher } from "@/components/client-switcher";
 import { CreatePostModal } from "@/components/create-post-modal";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 
 import Calendar from "@/pages/calendar";
@@ -93,6 +94,7 @@ function Router() {
 function AppContent() {
   const [location] = useLocation();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const { language, setLanguage } = useApp();
 
   // Update page title and meta description based on route
   useEffect(() => {
@@ -138,6 +140,17 @@ function AppContent() {
             </Breadcrumb>
           </div>
           <div className="flex items-center gap-3">
+            <Select value={language} onValueChange={(v) => setLanguage(v as 'en' | 'ku' | 'ar')}>
+              <SelectTrigger className="w-[140px]">
+                <Languages className="mr-2 h-4 w-4" />
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="en">English</SelectItem>
+                <SelectItem value="ku">کوردی</SelectItem>
+                <SelectItem value="ar">العربيّة</SelectItem>
+              </SelectContent>
+            </Select>
             <Button onClick={() => setIsCreateModalOpen(true)} data-testid="button-create">
               <Plus className="mr-2 h-4 w-4" />
               Create

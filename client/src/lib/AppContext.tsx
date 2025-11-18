@@ -14,9 +14,13 @@ import {
   addReplyToComment as addReplyToCommentInStorage
 } from './storage';
 
+type Language = 'en' | 'ku' | 'ar';
+
 interface AppContextType {
   state: AppState;
   currentClient: Client | undefined;
+  language: Language;
+  setLanguage: (language: Language) => void;
   switchClient: (clientId: string) => void;
   addPost: (post: Post) => void;
   updatePost: (post: Post) => void;
@@ -32,8 +36,18 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<AppState>(loadAppState());
+  const [language, setLanguage] = useState<Language>(() => {
+    // Load language from localStorage or default to 'en'
+    const savedLanguage = localStorage.getItem('app-language') as Language;
+    return savedLanguage || 'en';
+  });
 
   const currentClient = getCurrentClient(state);
+
+  // Save language to localStorage when it changes
+  useEffect(() => {
+    localStorage.setItem('app-language', language);
+  }, [language]);
 
   const switchClient = (clientId: string) => {
     const newState = switchClientInStorage(state, clientId);
@@ -91,7 +105,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AppContext.Provider value={{ state, currentClient, switchClient, addPost, updatePost, deletePost, updateClient, addClient, deleteClient, addReplyToComment, refreshAnalytics }}>
+    <AppContext.Provider value={{ state, currentClient, language, setLanguage, switchClient, addPost, updatePost, deletePost, updateClient, addClient, deleteClient, addReplyToComment, refreshAnalytics }}>
       {children}
     </AppContext.Provider>
   );
