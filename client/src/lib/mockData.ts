@@ -1,42 +1,42 @@
 import type { AppState, Client, Post, Comment, SecurityEvent, ClientHealth, Analytics } from './types';
 
 const clientLogos = [
-  '/the-social-shepherd.jpeg',
-  '/social-chain.png',
-  '/we-are-social.png',
+  '/hicars.jpg',
+  '/alatcars.jpg',
+  '/helvaci-logo.png',
 ];
 
 export function generateMockData(): AppState {
   const clients: Client[] = [
     {
       id: '1',
-      name: 'The Social Shepherd',
+      name: 'Hi Cars Rental',
       logo: clientLogos[0],
-      email: 'hello@thesocialshepherd.com',
+      email: 'info@hicars.com',
       phone: '+1 (555) 123-4567',
-      description: 'Leading social media management agency specializing in brand growth and engagement',
+      description: 'Premium car rental service since 2009, providing reliable and affordable vehicle rental solutions',
       connectedAccounts: [
         {
           id: '1-fb',
           platform: 'facebook',
-          username: 'The Social Shepherd',
-          avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=TheSocialShepherd&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf',
+          username: 'Hi Cars Rental',
+          avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=HiCars&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf',
           isConnected: true,
           connectedAt: new Date('2024-11-01'),
         },
         {
           id: '1-ig',
           platform: 'instagram',
-          username: 'thesocialshepherd',
-          avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=thesocialshepherd&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf',
+          username: 'hicars_rental',
+          avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=hicars&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf',
           isConnected: true,
           connectedAt: new Date('2024-11-01'),
         },
         {
           id: '1-tt',
           platform: 'tiktok',
-          username: '@thesocialshepherd',
-          avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=thesocialshepherd_tiktok&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf',
+          username: '@hicars',
+          avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=hicars_tiktok&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf',
           isConnected: true,
           connectedAt: new Date('2024-11-01'),
         },
@@ -44,20 +44,20 @@ export function generateMockData(): AppState {
     },
     {
       id: '2',
-      name: 'Social Chain',
+      name: 'Alat Cars',
       logo: clientLogos[1],
-      email: 'contact@socialchain.com',
+      email: 'contact@alatcars.com',
       phone: '+1 (555) 234-5678',
-      description: 'Innovative social media solutions connecting brands with their audiences',
+      description: 'Luxury car rental and sales service, offering premium vehicles for discerning customers',
       connectedAccounts: [],
     },
     {
       id: '3',
-      name: 'We Are Social',
+      name: 'Helvaci',
       logo: clientLogos[2],
-      email: 'info@wearesocial.com',
+      email: 'info@helvaci.com',
       phone: '+1 (555) 345-6789',
-      description: 'Global creative agency delivering social-first campaigns and strategies',
+      description: 'Traditional and authentic Turkish halva manufacturer since 1900, preserving heritage recipes',
       connectedAccounts: [],
     },
   ];

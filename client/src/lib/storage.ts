@@ -8,9 +8,12 @@ export function loadAppState(): AppState {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) {
       const parsed = JSON.parse(stored);
-      // Convert date strings back to Date objects
-      return {
+      const mockData = generateMockData();
+      
+      // Update clients from mockData while preserving other data
+      const updatedState = {
         ...parsed,
+        clients: mockData.clients, // Always use latest client data
         posts: parsed.posts.map((p: any) => ({
           ...p,
           scheduledDate: new Date(p.scheduledDate),
@@ -36,7 +39,15 @@ export function loadAppState(): AppState {
             timestamp: new Date(w.timestamp),
           })),
         })),
+        // Ensure currentClientId points to a valid client
+        currentClientId: mockData.clients.find(c => c.id === parsed.currentClientId) 
+          ? parsed.currentClientId 
+          : mockData.currentClientId,
       };
+      
+      // Save updated state
+      saveAppState(updatedState);
+      return updatedState;
     }
   } catch (error) {
     console.error('Error loading app state:', error);

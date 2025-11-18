@@ -10,6 +10,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Toggle } from '@/components/ui/toggle';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { format, subDays, startOfDay, endOfDay, differenceInDays } from 'date-fns';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, Legend } from 'recharts';
 
@@ -596,9 +597,17 @@ export default function Analytics() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-semibold">{t.analytics}</h1>
-          <p className="text-muted-foreground mt-1">{t.trackPerformance}</p>
+        <div className="flex items-center gap-4">
+          {currentClient && (
+            <Avatar className="h-12 w-12">
+              <AvatarImage src={currentClient.logo} alt={currentClient.name} />
+              <AvatarFallback>{currentClient.name[0]}</AvatarFallback>
+            </Avatar>
+          )}
+          <div>
+            <h1 className="text-3xl font-semibold">{t.analytics}</h1>
+            <p className="text-muted-foreground mt-1">{t.trackPerformance}</p>
+          </div>
         </div>
         <div className="flex gap-3">
         <Button variant="outline" onClick={refreshAnalytics} data-testid="button-refresh">
