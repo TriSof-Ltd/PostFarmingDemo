@@ -1,5 +1,5 @@
 import { useRoute, Link } from 'wouter';
-import { Shield, AlertCircle, Clock, Check, AlertTriangle, XCircle, Filter } from 'lucide-react';
+import { Shield, AlertCircle, Clock, Check, AlertTriangle, XCircle, Filter, ArrowRight } from 'lucide-react';
 import { useApp } from '@/lib/AppContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -20,6 +20,13 @@ export default function SecurityDetail() {
 
   const [severityFilter, setSeverityFilter] = useState<SeverityLevel | 'all'>('all');
   const [platformFilter, setPlatformFilter] = useState<Platform | 'all'>('all');
+
+  // Mock state for action status
+  const [actionStatus, setActionStatus] = useState<Record<number, 'notStarted' | 'inProgress' | 'done'>>({
+    1: 'notStarted',
+    2: 'inProgress',
+    3: 'done'
+  });
 
   if (!client || !health) {
     return <div>Client not found</div>;
@@ -56,7 +63,7 @@ export default function SecurityDetail() {
   const getHealthStatus = (score: number) => {
     if (score >= 90) return t.healthy;
     if (score >= 70) return t.needsAttention;
-    return t.highRisk;
+    return `${t.highRisk} - ${t.actBeforePosting}`;
   };
 
   const filteredWarnings = health.warnings
@@ -68,13 +75,40 @@ export default function SecurityDetail() {
     });
 
   const recommendedActions = [
-    { id: 1, text: t.pauseNewTiktokSpend, link: '#warning-tiktok' },
-    { id: 2, text: t.reduceAggressiveCopy, link: '#warning-fb' },
-    { id: 3, text: t.slowDownFollowerGrowth, link: '#warning-insta' },
+    { id: 1, text: t.pauseNewTiktokSpend, link: '#warning-tiktok', tag: 'TikTok · Bad actor proximity' },
+    { id: 2, text: t.reduceAggressiveCopy, link: '#warning-fb', tag: 'Facebook · Disapproved ads' },
+    { id: 3, text: t.slowDownFollowerGrowth, link: '#warning-insta', tag: 'Instagram · Growth spike' },
   ];
 
+  const toggleActionStatus = (id: number) => {
+    setActionStatus(prev => {
+      const current = prev[id];
+      const next = current === 'notStarted' ? 'inProgress' : current === 'inProgress' ? 'done' : 'notStarted';
+      return { ...prev, [id]: next };
+    });
+  };
+
+  const getStatusColor = (status: 'notStarted' | 'inProgress' | 'done') => {
+    switch (status) {
+      case 'done': return 'bg-green-100 text-green-700 hover:bg-green-200';
+      case 'inProgress': return 'bg-blue-100 text-blue-700 hover:bg-blue-200';
+      default: return 'bg-gray-100 text-gray-700 hover:bg-gray-200';
+    }
+  };
+
+  const scrollToWarning = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
+    e.preventDefault();
+    const element = document.getElementById(id.replace('#', ''));
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+      // Optional: highlight effect could be added here
+    }
+  };
+
+  const criticalRiskCount = health.warnings.filter(w => w.severity === 'critical').length;
+
   return (
-    <div className="space-y-8">
+    <div className="space-y-10">
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-sm text-muted-foreground">
         <Link href="/" className="hover:text-foreground">{t.appName}</Link>
@@ -88,10 +122,7 @@ export default function SecurityDetail() {
       <div className="flex items-center justify-between">
         <div>
           <div className="flex items-center gap-3 mb-2">
-            <h1 className="text-3xl font-semibold">{t.securityTitle}</h1>
-            <Badge variant="secondary" className="text-sm font-normal">
-              {client.name}
-            </Badge>
+            <h1 className="text-3xl font-semibold">{t.securityTitle} – {client.name}</h1>
           </div>
         </div>
       </div>
@@ -99,23 +130,23 @@ export default function SecurityDetail() {
       {/* Overall Health Card */}
       <Card className="overflow-hidden">
         <CardContent className="p-6">
-          <div className="flex flex-col lg:flex-row gap-8 items-start lg:items-center">
-            {/* Left: Score */}
-            <div className="flex items-center gap-4 min-w-[200px]">
-              <div className={`text-5xl font-bold ${getScoreColor(health.overallScore)}`}>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Left Column: Score & Risk */}
+            <div className="flex items-center gap-6">
+              <div className={`text-6xl font-bold ${getScoreColor(health.overallScore)}`}>
                 {health.overallScore}
               </div>
               <div>
-                <div className={`text-lg font-semibold ${getScoreColor(health.overallScore)}`}>
+                <div className={`text-xl font-bold ${getScoreColor(health.overallScore)} mb-2`}>
                   {getHealthStatus(health.overallScore)}
                 </div>
-                <div className="flex gap-3 mt-1 text-xs">
+                <div className="flex gap-3">
                   {(['tiktok', 'facebook', 'instagram'] as Platform[]).map(p => {
                     const risk = getPlatformRisk(p);
                     return (
                       <div key={p} className="flex items-center gap-1.5">
-                        <span className={`h-2 w-2 rounded-full ${risk.dot}`} />
-                        <span className="capitalize text-muted-foreground">{p}</span>
+                        <span className={`h-2.5 w-2.5 rounded-full ${risk.dot}`} />
+                        <span className="capitalize text-sm font-medium text-muted-foreground">{p}</span>
                       </div>
                     );
                   })}
@@ -123,14 +154,22 @@ export default function SecurityDetail() {
               </div>
             </div>
 
-            {/* Middle: Summary */}
-            <div className="flex-1 border-l pl-8 border-border/50">
-              <div className="font-medium text-lg mb-1">
-                {health.warnings.length} {t.activeWarnings} · {health.warnings.filter(w => w.severity === 'critical').length} {t.critical} {t.environment} risk
+            {/* Right Column: Summary Stats */}
+            <div className="flex flex-col justify-center border-l pl-8 border-border/50 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">{t.activeWarnings}</span>
+                <span className="font-semibold">{health.warnings.length}</span>
               </div>
-              <p className="text-muted-foreground text-sm">
-                {t.mainDrivers}
-              </p>
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">{t.environment} {t.critical}</span>
+                <span className={`font-semibold ${criticalRiskCount > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                  {criticalRiskCount > 0 ? `${criticalRiskCount} ${t.critical}` : t.noCriticalRisk}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">{t.lastScanHeader}</span>
+                <span className="font-medium">{format(new Date(health.lastScan), 'p')}</span>
+              </div>
             </div>
           </div>
         </CardContent>
@@ -138,22 +177,42 @@ export default function SecurityDetail() {
 
       {/* Recommended Actions (Today) */}
       <div className="space-y-4">
-        <h2 className="text-lg font-semibold">{t.recommendedActionsToday}</h2>
+        <div>
+          <h2 className="text-lg font-semibold">{t.recommendedActionsToday}</h2>
+          <p className="text-sm text-muted-foreground">{t.quickSteps}</p>
+        </div>
         <div className="grid gap-4 md:grid-cols-3">
           {recommendedActions.map((action, index) => (
-            <Card key={action.id} className="bg-white border-l-4 border-l-blue-500">
-              <CardContent className="p-4">
-                <div className="flex items-start gap-3">
-                  <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-600">
-                    {index + 1}
+            <Card key={action.id} className="bg-white border-l-4 border-l-blue-500 relative group hover:shadow-md transition-shadow">
+              <CardContent className="p-4 flex flex-col h-full justify-between">
+                <div className="space-y-3">
+                  <div className="flex justify-between items-start">
+                    <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-600">
+                      {index + 1}
+                    </div>
+                    <button
+                      onClick={() => toggleActionStatus(action.id)}
+                      className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide transition-colors ${getStatusColor(actionStatus[action.id])}`}
+                    >
+                      {t[actionStatus[action.id]]}
+                    </button>
                   </div>
-                  <div className="space-y-1">
+
+                  <div>
+                    <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">
+                      {action.tag}
+                    </div>
                     <p className="text-sm font-medium leading-snug">{action.text}</p>
-                    <a href={action.link} className="text-xs text-muted-foreground hover:text-blue-600 hover:underline block mt-1">
-                      {t.whyItMatters} →
-                    </a>
                   </div>
                 </div>
+
+                <a
+                  href={action.link}
+                  onClick={(e) => scrollToWarning(e, action.link)}
+                  className="text-xs font-medium text-muted-foreground hover:text-foreground hover:underline flex items-center gap-1 mt-4 group-hover:text-blue-600 transition-colors"
+                >
+                  {t.whyItMatters} <ArrowRight className="h-3 w-3" />
+                </a>
               </CardContent>
             </Card>
           ))}
@@ -162,10 +221,13 @@ export default function SecurityDetail() {
 
       {/* Active Warnings */}
       <div className="space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <h2 className="text-lg font-semibold">{t.activeWarnings}</h2>
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+          <div>
+            <h2 className="text-lg font-semibold">{t.activeWarnings}</h2>
+            <p className="text-sm text-muted-foreground">{t.activeWarningsDesc}</p>
+          </div>
 
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2 items-center">
             {/* Platform Filter */}
             <div className="flex items-center bg-muted/50 rounded-lg p-1">
               {(['all', 'tiktok', 'facebook', 'instagram'] as const).map((p) => (
@@ -173,7 +235,7 @@ export default function SecurityDetail() {
                   key={p}
                   onClick={() => setPlatformFilter(p)}
                   className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors capitalize ${platformFilter === p
-                    ? 'bg-white shadow-sm text-foreground'
+                    ? 'bg-black text-white shadow-sm'
                     : 'text-muted-foreground hover:text-foreground'
                     }`}
                 >
@@ -184,35 +246,45 @@ export default function SecurityDetail() {
 
             {/* Severity Filter */}
             <div className="flex items-center bg-muted/50 rounded-lg p-1">
-              {(['all', 'critical', 'high', 'medium'] as const).map((s) => (
-                <button
-                  key={s}
-                  onClick={() => setSeverityFilter(s)}
-                  className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors capitalize ${severityFilter === s
-                    ? 'bg-white shadow-sm text-foreground'
-                    : 'text-muted-foreground hover:text-foreground'
-                    }`}
-                >
-                  {s === 'all' ? t.all : t[s]}
-                </button>
-              ))}
+              {(['all', 'critical', 'high', 'medium'] as const).map((s) => {
+                const count = s === 'all'
+                  ? health.warnings.length
+                  : health.warnings.filter(w => w.severity === s).length;
+
+                return (
+                  <button
+                    key={s}
+                    onClick={() => setSeverityFilter(s)}
+                    className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors capitalize ${severityFilter === s
+                      ? 'bg-black text-white shadow-sm'
+                      : 'text-muted-foreground hover:text-foreground'
+                      }`}
+                  >
+                    {s === 'all' ? t.all : `${t[s]} (${count})`}
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>
 
         <div className="space-y-4">
-          {filteredWarnings.map((warning) => {
+          {filteredWarnings.map((warning, index) => {
             const styles = getSeverityStyles(warning.severity);
+            // Mock linking logic based on index/platform
+            const linkedActionId = warning.platform === 'tiktok' ? 1 : warning.platform === 'facebook' ? 2 : 3;
+            const warningId = warning.platform === 'tiktok' ? 'warning-tiktok' : warning.platform === 'facebook' ? 'warning-fb' : 'warning-insta';
+
             return (
               <div
                 key={warning.id}
-                className={`rounded-lg border shadow-sm ${styles.border} ${styles.bg} overflow-hidden`}
+                id={warningId}
+                className={`rounded-lg border shadow-sm ${styles.border} ${styles.bg} overflow-hidden transition-all`}
               >
                 <div className="p-5">
                   {/* Header Row */}
                   <div className="flex items-center gap-3 mb-3 text-sm">
                     <div className="flex items-center gap-2 font-medium capitalize">
-                      {/* Platform Icon Placeholder - could use actual icons */}
                       {warning.platform}
                     </div>
                     <span className="text-muted-foreground/40">|</span>
@@ -220,8 +292,14 @@ export default function SecurityDetail() {
                       {t[warning.severity]}
                     </Badge>
                     <span className="text-muted-foreground/40">|</span>
+                    <span className="text-muted-foreground">{format(new Date(warning.timestamp), 'p')}</span>
+                    <span className="text-muted-foreground/40">|</span>
                     <span className="text-muted-foreground">{t.environment}</span>
-                    <span className="text-muted-foreground ml-auto">{format(new Date(warning.timestamp), 'p')}</span>
+
+                    {/* Linked Action Note */}
+                    <div className="ml-auto flex items-center gap-1 text-[10px] text-muted-foreground bg-muted/50 px-2 py-1 rounded-full">
+                      <span>{t.linkedToAction} #{linkedActionId}</span>
+                    </div>
                   </div>
 
                   {/* Body */}
@@ -231,15 +309,13 @@ export default function SecurityDetail() {
                   </div>
 
                   {/* Footer: Recommended Action */}
-                  <div className="bg-muted/30 -mx-5 -mb-5 px-5 py-3 border-t mt-4">
-                    <div className="flex items-start gap-2">
-                      <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mt-0.5 shrink-0">
-                        {t.recommendedAction}:
-                      </span>
-                      <span className="text-sm text-foreground/90">
-                        {t.badActorProximityAction} {/* Using generic action for demo, ideally dynamic */}
-                      </span>
-                    </div>
+                  <div className="bg-muted/30 -mx-5 -mb-5 px-5 py-3 border-t mt-4 flex items-center gap-3">
+                    <span className="text-[10px] font-bold text-muted-foreground bg-muted px-2 py-1 rounded uppercase tracking-wider">
+                      {t.recommendedAction}
+                    </span>
+                    <span className="text-sm text-foreground/90">
+                      {t.badActorProximityAction}
+                    </span>
                   </div>
                 </div>
               </div>

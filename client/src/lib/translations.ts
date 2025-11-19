@@ -44,7 +44,7 @@ export const translations: Record<Language, Record<string, string>> = {
         basicStatistics: 'Basic Statistics',
         viewStats: 'View stats & generate report',
         viewDetails: 'View details',
-        all: 'All',
+
         dateRange: 'Date range',
         contentType: 'Content type',
         performanceOverview: 'Performance Overview',
@@ -153,6 +153,14 @@ export const translations: Record<Language, Record<string, string>> = {
         medium: 'Medium',
         low: 'Low',
         all: 'All',
+        noCriticalRisk: 'No critical environment risks detected.',
+        quickSteps: 'Quick steps to reduce risk for this client.',
+        activeWarningsDesc: 'Things we’re currently worried about on each platform.',
+        actBeforePosting: 'act before posting/ spending again.',
+        notStarted: 'Not started',
+        inProgress: 'In progress',
+        done: 'Done',
+        linkedToAction: 'Linked to Action',
     },
     ku: {
         // Sidebar
@@ -197,7 +205,7 @@ export const translations: Record<Language, Record<string, string>> = {
         basicStatistics: 'ئامارە بنەڕەتییەکان',
         viewStats: 'بینینی ئامار و دروستکردنی راپۆرت',
         viewDetails: 'بینینی وردەکارییەکان',
-        all: 'هەموو',
+
         dateRange: 'ماوەی بڕیار',
         contentType: 'جۆری ناوەڕۆک',
         performanceOverview: 'نیشاندانی کارکردن',
@@ -306,6 +314,14 @@ export const translations: Record<Language, Record<string, string>> = {
         medium: 'مامناوەند',
         low: 'نزم',
         all: 'هەموو',
+        noCriticalRisk: 'هیچ مەترسییەکی ژینگەیی هەستیار دەستنیشان نەکراوە.',
+        quickSteps: 'هەنگاوی خێرا بۆ کەمکردنەوەی مەترسی بۆ ئەم کڕیارە.',
+        activeWarningsDesc: 'ئەو شتانەی کە لە ئێستادا نیگەرانین دەربارەیان لە هەر پلاتفۆرمێک.',
+        actBeforePosting: 'کار بکە پێش پۆستکردن/ خەرجکردنەوە.',
+        notStarted: 'دەستی پێ نەکردووە',
+        inProgress: 'لە جێبەجێکردندان',
+        done: 'تەواو',
+        linkedToAction: 'بەستراوە بە کردار',
     },
     ar: {
         // Sidebar
@@ -350,7 +366,7 @@ export const translations: Record<Language, Record<string, string>> = {
         basicStatistics: 'الإحصائيات الأساسية',
         viewStats: 'عرض الإحصائيات وإنشاء تقرير',
         viewDetails: 'عرض التفاصيل',
-        all: 'الكل',
+
         dateRange: 'نطاق التاريخ',
         contentType: 'نوع المحتوى',
         performanceOverview: 'نظرة عامة على الأداء',
@@ -459,5 +475,13 @@ export const translations: Record<Language, Record<string, string>> = {
         medium: 'متوسط',
         low: 'منخفض',
         all: 'الكل',
+        noCriticalRisk: 'لم يتم اكتشاف مخاطر بيئية حرجة.',
+        quickSteps: 'خطوات سريعة لتقليل المخاطر لهذا العميل.',
+        activeWarningsDesc: 'الأشياء التي نقلق بشأنها حالياً على كل منصة.',
+        actBeforePosting: 'تصرف قبل النشر/ الإنفاق مرة أخرى.',
+        notStarted: 'لم يبدأ',
+        inProgress: 'قيد التنفيذ',
+        done: 'تم',
+        linkedToAction: 'مرتبط بالإجراء',
     },
 };
