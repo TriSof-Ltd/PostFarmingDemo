@@ -1,8 +1,8 @@
 import type { AppState, Client, Post, Comment, SecurityEvent, ClientHealth, Analytics } from './types';
 
 const clientLogos = [
-  '/hicars.jpg',
-  '/alatcars.jpg',
+  '/hicars-logo.jpg',
+  '/alatcars-logo.jpg',
   '/helvaci-logo.png',
 ];
 

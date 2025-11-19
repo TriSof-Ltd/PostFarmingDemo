@@ -1,4 +1,4 @@
-import { Shield, AlertTriangle, CheckCircle2, XCircle, ChevronRight } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, XCircle, ChevronRight } from 'lucide-react';
 import { useApp } from '@/lib/AppContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -14,15 +14,7 @@ export default function Security() {
   const { clientHealth } = state;
 
 
-  const totalClients = state.clients.length;
-  const healthyClients = clientHealth.filter((h) => h.status === 'healthy').length;
-  const needsAttention = clientHealth.filter((h) => h.status === 'attention').length;
-  const highRisk = clientHealth.filter((h) => h.status === 'high-risk').length;
-  const totalAccounts = state.clients.reduce((sum, client) => sum + client.connectedAccounts.filter(acc => acc.isConnected).length, 0);
 
-  const lastScan = clientHealth.length > 0
-    ? new Date(Math.max(...clientHealth.map((h) => new Date(h.lastScan).getTime())))
-    : new Date();
 
   const getStatusColor = (status: HealthStatus) => {
     switch (status) {
@@ -70,49 +62,7 @@ export default function Security() {
         </div>
       </div>
 
-      {/* Account Shield Overview */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="text-xl">Account Shield overview</CardTitle>
-              <CardDescription className="mt-2">
-                Postfarming monitors posting patterns across all clients to help your agency avoid restrictions and bans.
-              </CardDescription>
-            </div>
-            <Badge variant="secondary" className="gap-2 px-4 py-2">
-              <Shield className="h-4 w-4" />
-              Postfarming Account Shield™
-            </Badge>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            <div>
-              <div className="text-sm text-muted-foreground mb-1">Connected client companies</div>
-              <div className="text-3xl font-bold">{totalClients}</div>
-            </div>
-            <div>
-              <div className="text-sm text-muted-foreground mb-1">Clients fully safe</div>
-              <div className="text-3xl font-bold text-green-600">{healthyClients}</div>
-            </div>
-            <div>
-              <div className="text-sm text-muted-foreground mb-1">Clients needing attention</div>
-              <div className="text-3xl font-bold text-yellow-600">{needsAttention + highRisk}</div>
-            </div>
-            <div>
-              <div className="text-sm text-muted-foreground mb-1">Total social accounts</div>
-              <div className="text-3xl font-bold">{totalAccounts}</div>
-            </div>
-          </div>
-          <div className="mt-6 pt-6 border-t">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <span>Last global scan:</span>
-              <span className="font-medium text-foreground">{format(lastScan, 'p')} ago</span>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+
 
       {/* Connected Clients */}
       <Card>
@@ -141,8 +91,12 @@ export default function Security() {
                 <Link key={health.clientId} href={`/security/${health.clientId}`}>
                   <div className="grid grid-cols-12 gap-4 px-4 py-4 hover-elevate rounded-lg cursor-pointer border-b last:border-0" data-testid={`row-client-${health.clientId}`}>
                     <div className="col-span-3 flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-lg bg-primary text-primary-foreground flex items-center justify-center font-semibold text-sm">
-                        {client.name.substring(0, 2).toUpperCase()}
+                      <div className="h-10 w-10 rounded-lg overflow-hidden bg-muted border">
+                        <img
+                          src={client.logo}
+                          alt={client.name}
+                          className="h-full w-full object-cover"
+                        />
                       </div>
                       <div>
                         <div className="font-medium">{client.name}</div>
