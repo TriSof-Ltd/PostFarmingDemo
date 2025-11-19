@@ -62,6 +62,25 @@ export const translations: Record<Language, Record<string, string>> = {
         instagram: 'Instagram',
         tiktok: 'TikTok',
 
+        // Connections
+        connectionsTitle: 'Connections',
+        connectionsSubtitle: 'Manage your social media account connections',
+        secureConnectionsTitle: 'Secure Connections & Account Protection',
+        secureConnectionsSubtitle: 'Built for safe posting on Facebook, Instagram & TikTok.',
+        trustPoint1: 'We never see or store your passwords',
+        trustPoint2: 'Official APIs only (Meta & TikTok)',
+        trustPoint3: 'Tokens are encrypted and can be revoked at any time',
+        trustPoint4: 'Built to reduce the risk of blocks and restrictions',
+        accountShieldBadge: 'Postfarming Account Shield™',
+        viewSecurityOverview: 'Need details? View our security overview',
+        connectFacebook: 'Connect your Facebook Page',
+        connectInstagram: 'Connect your Instagram Business account',
+        connectTiktok: 'Connect your TikTok Business account',
+        connected: 'Connected',
+        disconnect: 'Disconnect',
+        connect: 'Connect',
+        securityAccountHealth: 'Security & Account Health',
+
         // Settings
         settingsTitle: 'Settings',
         settingsSubtitle: 'Manage your account and application preferences',
@@ -173,6 +192,25 @@ export const translations: Record<Language, Record<string, string>> = {
         instagram: 'ئینستاگرام',
         tiktok: 'تیکتۆک',
 
+        // Connections
+        connectionsTitle: 'پەیوەندییەکان',
+        connectionsSubtitle: 'بەڕێوەبردنی پەیوەندییەکانی ئەکاونتی میدیای کۆمەڵایەتی',
+        secureConnectionsTitle: 'پەیوەندییە پارێزراوەکان و پاراستنی ئەکاونت',
+        secureConnectionsSubtitle: 'دروستکراوە بۆ پۆستکردنی پارێزراو لە فەیسبووک، ئینستاگرام و تیکتۆک.',
+        trustPoint1: 'ئێمە هەرگیز وشەی نهێنیەکانت نابینین یان پاشەکەوت ناکەین',
+        trustPoint2: 'تەنها API ی فەرمی (Meta و TikTok)',
+        trustPoint3: 'تۆکنەکان شفرەکراون و دەتوانرێت هەر کاتێک هەڵیانبوەشێنیتەوە',
+        trustPoint4: 'دروستکراوە بۆ کەمکردنەوەی مەترسی بلۆککردن و سنووردارکردن',
+        accountShieldBadge: 'قەڵغانی ئەکاونتی Postfarming™',
+        viewSecurityOverview: 'پێویستت بە وردەکارییە؟ بینینی تێڕوانینی گشتی ئاسایش',
+        connectFacebook: 'پەیوەندیکردنی پەڕەی فەیسبووک',
+        connectInstagram: 'پەیوەندیکردنی ئەکاونتی بازرگانی ئینستاگرام',
+        connectTiktok: 'پەیوەندیکردنی ئەکاونتی بازرگانی تیکتۆک',
+        connected: 'پەیوەندیدار',
+        disconnect: 'پچڕاندنی پەیوەندی',
+        connect: 'پەیوەندیکردن',
+        securityAccountHealth: 'ئاسایش و تەندروستی ئەکاونت',
+
         // Settings
         settingsTitle: 'ڕێکخستنەکان',
         settingsSubtitle: 'بەڕێوەبردنی ئەکاونت و هەڵبژاردنەکانی بەرنامە',
@@ -283,6 +321,25 @@ export const translations: Record<Language, Record<string, string>> = {
         facebook: 'فيسبوك',
         instagram: 'إنستغرام',
         tiktok: 'تيك توك',
+
+        // Connections
+        connectionsTitle: 'الاتصالات',
+        connectionsSubtitle: 'إدارة اتصالات حسابات وسائل التواصل الاجتماعي',
+        secureConnectionsTitle: 'الاتصالات الآمنة وحماية الحساب',
+        secureConnectionsSubtitle: 'مصمم للنشر الآمن على فيسبوك وإنستغرام وتيك توك.',
+        trustPoint1: 'نحن لا نرى أو نخزن كلمات المرور الخاصة بك أبداً',
+        trustPoint2: 'واجهات برمجة التطبيقات الرسمية فقط (Meta و TikTok)',
+        trustPoint3: 'الرموز مشفرة ويمكن إلغاؤها في أي وقت',
+        trustPoint4: 'مصمم لتقليل مخاطر الحظر والقيود',
+        accountShieldBadge: 'درع حساب Postfarming™',
+        viewSecurityOverview: 'هل تحتاج إلى تفاصيل؟ عرض نظرة عامة على الأمان',
+        connectFacebook: 'ربط صفحة فيسبوك الخاصة بك',
+        connectInstagram: 'ربط حساب إنستغرام التجاري الخاص بك',
+        connectTiktok: 'ربط حساب تيك توك التجاري الخاص بك',
+        connected: 'متصل',
+        disconnect: 'قطع الاتصال',
+        connect: 'اتصال',
+        securityAccountHealth: 'الأمان وصحة الحساب',
 
         // Settings
         settingsTitle: 'الإعدادات',
