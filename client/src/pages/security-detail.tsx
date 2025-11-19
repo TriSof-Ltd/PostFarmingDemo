@@ -193,66 +193,76 @@ export default function SecurityDetail() {
         </div>
 
         <div className="space-y-4">
-          {filteredWarnings.map((warning, index) => {
-            const styles = getSeverityStyles(warning.severity);
-            // Mock linking logic based on index/platform
-            const linkedActionId = warning.platform === 'tiktok' ? 1 : warning.platform === 'facebook' ? 2 : 3;
-            const warningId = warning.platform === 'tiktok' ? 'warning-tiktok' : warning.platform === 'facebook' ? 'warning-fb' : 'warning-insta';
+          {filteredWarnings.length === 0 ? (
+            <div className="text-center py-12 px-6">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 dark:bg-green-900/20 mb-4">
+                <Check className="h-8 w-8 text-green-600 dark:text-green-400" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2">All Clear! 🎉</h3>
+              <p className="text-muted-foreground max-w-md mx-auto">
+                No active warnings detected. Your account is in great shape! Keep up the excellent work maintaining a healthy and secure social media presence.
+              </p>
+            </div>
+          ) : (
+            filteredWarnings.map((warning, index) => {
+              const styles = getSeverityStyles(warning.severity);
+              // Mock linking logic based on index/platform
+              const linkedActionId = warning.platform === 'tiktok' ? 1 : warning.platform === 'facebook' ? 2 : 3;
+              const warningId = warning.platform === 'tiktok' ? 'warning-tiktok' : warning.platform === 'facebook' ? 'warning-fb' : 'warning-insta';
 
-            return (
-              <div
-                key={warning.id}
-                id={warningId}
-                className={`rounded-lg border shadow-sm ${styles.border} ${styles.bg} overflow-hidden transition-all`}
-              >
-                <div className="p-5">
-                  {/* Header Row */}
-                  <div className="flex items-center gap-3 mb-3 text-sm">
-                    <div className="flex items-center gap-2 font-medium capitalize">
-                      {(() => {
-                        const Icon = platformIcons[warning.platform];
-                        return (
-                          <>
-                            <Icon className="h-4 w-4" />
-                            {warning.platform}
-                          </>
-                        );
-                      })()}
+              return (
+                <div
+                  key={warning.id}
+                  id={warningId}
+                  className={`rounded-lg border shadow-sm ${styles.border} ${styles.bg} overflow-hidden transition-all`}
+                >
+                  <div className="p-5">
+                    {/* Header Row */}
+                    <div className="flex items-center gap-3 mb-3 text-sm">
+                      <div className="flex items-center gap-2 font-medium capitalize">
+                        {(() => {
+                          const Icon = platformIcons[warning.platform];
+                          return (
+                            <>
+                              <Icon className="h-4 w-4" />
+                              {warning.platform}
+                            </>
+                          );
+                        })()}
+                      </div>
+                      <span className="text-muted-foreground/40">|</span>
+                      <Badge variant="secondary" className={`${styles.badge} border-0 px-2 py-0.5 h-5 text-[10px] uppercase tracking-wider font-bold`}>
+                        {t[warning.severity]}
+                      </Badge>
+                      <span className="text-muted-foreground/40">|</span>
+                      <span className="text-muted-foreground">{format(new Date(warning.timestamp), 'p')}</span>
                     </div>
-                    <span className="text-muted-foreground/40">|</span>
-                    <Badge variant="secondary" className={`${styles.badge} border-0 px-2 py-0.5 h-5 text-[10px] uppercase tracking-wider font-bold`}>
-                      {t[warning.severity]}
-                    </Badge>
-                    <span className="text-muted-foreground/40">|</span>
-                    <span className="text-muted-foreground">{format(new Date(warning.timestamp), 'p')}</span>
-                    <span className="text-muted-foreground/40">|</span>
-                    <span className="text-muted-foreground">{t.environment}</span>
 
-                    {/* Linked Action Note */}
-                    <div className="ml-auto flex items-center gap-1 text-[10px] text-muted-foreground bg-muted/50 px-2 py-1 rounded-full">
-                      <span>{t.linkedToAction} #{linkedActionId}</span>
+                    {/* Body */}
+                    <div className="mb-4">
+                      <h3 className="font-bold text-base mb-1">{warning.title}</h3>
+                      <p className="text-muted-foreground text-sm">{warning.description}</p>
                     </div>
-                  </div>
 
-                  {/* Body */}
-                  <div className="mb-4">
-                    <h3 className="font-bold text-base mb-1">{warning.title}</h3>
-                    <p className="text-muted-foreground text-sm">{warning.description}</p>
-                  </div>
-
-                  {/* Footer: Recommended Action */}
-                  <div className="bg-muted/30 -mx-5 -mb-5 px-5 py-3 border-t mt-4 flex items-center gap-3">
-                    <span className="text-[10px] font-bold text-muted-foreground bg-muted px-2 py-1 rounded uppercase tracking-wider">
-                      {t.recommendedAction}
-                    </span>
-                    <span className="text-sm text-foreground/90">
-                      {getRecommendedActionText(warning.title)}
-                    </span>
+                    {/* Footer: Recommended Action */}
+                    <div className="bg-blue-50 dark:bg-blue-900/20 -mx-5 -mb-5 px-5 py-4 border-t border-blue-100 dark:border-blue-800 mt-4 flex items-start gap-3">
+                      <div className="mt-0.5 bg-blue-100 dark:bg-blue-800 text-blue-600 dark:text-blue-300 p-1.5 rounded-md shrink-0">
+                        <Shield className="h-4 w-4" />
+                      </div>
+                      <div className="flex flex-col gap-1">
+                        <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">
+                          {t.recommendedAction}
+                        </span>
+                        <span className="text-sm font-medium text-foreground">
+                          {getRecommendedActionText(warning.title)}
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })
+          )}
         </div>
       </div>
     </div>

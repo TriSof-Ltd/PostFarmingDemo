@@ -449,7 +449,22 @@ export default function Analytics() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div className="flex gap-3">
+        <div className="flex gap-3 ml-auto">
+          <Button
+            className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+            onClick={() => {
+              // Pre-fill modal with current date range
+              if (dateRange !== 'custom') {
+                const range = getDateRange();
+                setFromDate(range.start);
+                setToDate(range.end);
+              }
+              setIsReportModalOpen(true);
+            }}
+          >
+            <FileText className="mr-2 h-4 w-4" />
+            {t.generateReport}
+          </Button>
           <Button variant="outline" onClick={refreshAnalytics} data-testid="button-refresh">
             <RefreshCw className="mr-2 h-4 w-4" />
             {t.refresh}
@@ -508,31 +523,10 @@ export default function Analytics() {
               </CardHeader>
               <CardContent className="pt-0">
                 {isAll ? (
-                  <Button
-                    className="w-full"
-                    variant="default"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      generateReport(platformCard.id);
-                    }}
-                  >
-                    <FileText className="mr-2 h-4 w-4" />
-                    {platformCard.generateReportLabel}
-                  </Button>
+                  <div className="h-4"></div>
                 ) : (
                   <div className="space-y-2">
-                    <Button
-                      className="w-full"
-                      variant="outline"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        generateReport(platformCard.id);
-                      }}
-                    >
-                      <FileText className="mr-2 h-3 w-3" />
-                      {platformCard.generateReportLabel}
-                    </Button>
+                    <div className="h-4"></div>
                   </div>
                 )}
               </CardContent>
