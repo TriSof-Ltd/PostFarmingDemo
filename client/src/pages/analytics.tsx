@@ -449,18 +449,6 @@ export default function Analytics() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          {currentClient && (
-            <Avatar className="h-12 w-12">
-              <AvatarImage src={currentClient.logo} alt={currentClient.name} />
-              <AvatarFallback>{currentClient.name[0]}</AvatarFallback>
-            </Avatar>
-          )}
-          <div>
-            <h1 className="text-3xl font-semibold">{t.analytics}</h1>
-            <p className="text-muted-foreground mt-1">{t.trackPerformance}</p>
-          </div>
-        </div>
         <div className="flex gap-3">
           <Button variant="outline" onClick={refreshAnalytics} data-testid="button-refresh">
             <RefreshCw className="mr-2 h-4 w-4" />
@@ -490,8 +478,8 @@ export default function Analytics() {
             <Card
               key={platformCard.id}
               className={`cursor-pointer transition-all ${isActive
-                  ? 'ring-2 ring-primary bg-primary/10 border-primary shadow-md'
-                  : 'hover:shadow-md hover:border-primary/50 hover:-translate-y-0.5'
+                ? 'ring-2 ring-primary bg-primary/10 border-primary shadow-md'
+                : 'hover:shadow-md hover:border-primary/50 hover:-translate-y-0.5'
                 }`}
               onClick={() => setPlatformFilter(platformCard.id)}
             >
@@ -545,10 +533,6 @@ export default function Analytics() {
                       <FileText className="mr-2 h-3 w-3" />
                       {platformCard.generateReportLabel}
                     </Button>
-                    <div className="flex items-center justify-between text-xs text-muted-foreground pt-1">
-                      <span>Top this period:</span>
-                      <span className="font-semibold">{getMicroMetric()} {platformCard.id === 'instagram' ? t.reach : t.views}</span>
-                    </div>
                   </div>
                 )}
               </CardContent>

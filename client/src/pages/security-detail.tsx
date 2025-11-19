@@ -88,34 +88,6 @@ export default function SecurityDetail() {
 
   return (
     <div className="space-y-10">
-      {/* Breadcrumb */}
-      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-        <Link href="/" className="hover:text-foreground">{t.appName}</Link>
-        <span>›</span>
-        <Link href="/connections" className="hover:text-foreground">{t.connectionsTitle}</Link>
-        <span>›</span>
-        <span className="text-foreground">{t.securityTitle}</span>
-      </div>
-
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <div className="flex items-center gap-3 mb-2">
-            <h1 className="text-3xl font-semibold">{t.securityTitle} – {client.name}</h1>
-          </div>
-        </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => {
-            localStorage.removeItem('post-farming-data');
-            window.location.reload();
-          }}
-        >
-          Clear Cache & Reload
-        </Button>
-      </div>
-
       {/* Overall Health Card */}
       <Card className="overflow-hidden">
         <CardContent className="p-6">

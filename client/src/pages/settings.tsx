@@ -15,11 +15,6 @@ export default function Settings() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-semibold">{t.settingsTitle}</h1>
-        <p className="text-muted-foreground mt-1">{t.settingsSubtitle}</p>
-      </div>
-
       <div className="grid gap-6">
         {/* Profile Settings */}
         <Card>

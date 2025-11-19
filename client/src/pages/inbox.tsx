@@ -287,10 +287,6 @@ export default function Inbox() {
     <div className="h-full flex flex-col">
       <div className="mb-6">
         <div className="flex items-center justify-between mb-4">
-          <div>
-            <h1 className="text-3xl font-semibold">Unified Inbox</h1>
-            <p className="text-muted-foreground mt-1">Manage comments and private messages from all platforms.</p>
-          </div>
           <div className="flex items-center gap-3">
             <Badge variant="secondary" data-testid="badge-unread-count">
               {unreadCount} Unread
@@ -586,8 +582,8 @@ export default function Inbox() {
                         >
                           <div
                             className={`max-w-[75%] rounded-2xl px-3 py-2 text-sm ${threadItem.isFromUser
-                                ? 'bg-emerald-50 dark:bg-emerald-950'
-                                : 'bg-slate-100 dark:bg-slate-800'
+                              ? 'bg-emerald-50 dark:bg-emerald-950'
+                              : 'bg-slate-100 dark:bg-slate-800'
                               }`}
                           >
                             <p className="text-sm">{threadItem.content}</p>

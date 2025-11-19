@@ -101,10 +101,6 @@ export default function Clients() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-semibold">Clients</h1>
-          <p className="text-muted-foreground mt-1">Manage your client accounts</p>
-        </div>
         <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
           <DialogTrigger asChild>
             <Button data-testid="button-add-client" onClick={() => {
@@ -220,7 +216,7 @@ export default function Clients() {
                     <p className="text-sm text-muted-foreground mb-1">{client.phone}</p>
                     <p className="text-sm">{client.description}</p>
                   </div>
-                  
+
                   {connectedAccounts.length > 0 ? (
                     <div>
                       <p className="text-xs text-muted-foreground mb-2">Connected Accounts</p>

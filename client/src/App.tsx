@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Switch, Route, useLocation } from "wouter";
 import { Plus, Languages } from "lucide-react";
 import { queryClient } from "./lib/queryClient";
@@ -29,43 +29,43 @@ import AuthTikTok from "@/pages/auth-tiktok";
 import NotFound from "@/pages/not-found";
 
 const routeConfig: Record<string, { title: string; breadcrumb: string; description: string }> = {
-  '/': { 
-    title: 'Calendar - Post Farming', 
+  '/': {
+    title: 'Calendar - Post Farming',
     breadcrumb: 'Calendar',
     description: 'Schedule and manage your social media posts across Instagram, Facebook, and TikTok with our calendar view.'
   },
-  '/calendar': { 
-    title: 'Calendar - Post Farming', 
+  '/calendar': {
+    title: 'Calendar - Post Farming',
     breadcrumb: 'Calendar',
     description: 'Schedule and manage your social media posts across Instagram, Facebook, and TikTok with our calendar view.'
   },
-  '/inbox': { 
-    title: 'Unified Inbox - Post Farming', 
+  '/inbox': {
+    title: 'Unified Inbox - Post Farming',
     breadcrumb: 'Inbox',
     description: 'Manage and respond to comments from all your social media platforms in one unified inbox.'
   },
-  '/connections': { 
-    title: 'Connections - Post Farming', 
+  '/connections': {
+    title: 'Connections - Post Farming',
     breadcrumb: 'Connections',
     description: 'Connect and manage your social media accounts for Instagram, Facebook, and TikTok platforms.'
   },
-  '/analytics': { 
-    title: 'Analytics - Post Farming', 
+  '/analytics': {
+    title: 'Analytics - Post Farming',
     breadcrumb: 'Analytics',
     description: 'Track your social media performance with detailed analytics and engagement metrics across all platforms.'
   },
-  '/clients': { 
-    title: 'Clients - Post Farming', 
+  '/clients': {
+    title: 'Clients - Post Farming',
     breadcrumb: 'Clients',
     description: 'Manage your client accounts and their connected social media platforms in one place.'
   },
-  '/settings': { 
-    title: 'Settings - Post Farming', 
+  '/settings': {
+    title: 'Settings - Post Farming',
     breadcrumb: 'Settings',
     description: 'Configure your account settings, notifications, and preferences for Post Farming.'
   },
-  '/security': { 
-    title: 'Security & Account Health - Post Farming', 
+  '/security': {
+    title: 'Security & Account Health - Post Farming',
     breadcrumb: 'Security',
     description: 'Monitor account health, security warnings, and platform compliance across all client social media accounts.'
   },
@@ -98,12 +98,12 @@ function AppContent() {
 
   // Update page title and meta description based on route
   useEffect(() => {
-    const route = routeConfig[location] || { 
-      title: 'Post Farming', 
+    const route = routeConfig[location] || {
+      title: 'Post Farming',
       description: 'Social media management platform for scheduling and managing content across multiple platforms.'
     };
     document.title = route.title;
-    
+
     // Update meta description
     let metaDescription = document.querySelector('meta[name="description"]');
     if (!metaDescription) {
@@ -114,10 +114,33 @@ function AppContent() {
     metaDescription.setAttribute('content', route.description);
   }, [location]);
 
-  const getCurrentBreadcrumb = () => {
-    if (location.startsWith('/security/')) return 'Account Health';
-    return routeConfig[location]?.breadcrumb || 'Page';
+  const getBreadcrumbs = () => {
+    // For security detail pages, show: Home > Security > Account Health
+    if (location.startsWith('/security/')) {
+      return [
+        { label: 'Home', href: '/' },
+        { label: 'Security', href: '/security' },
+        { label: 'Account Health', href: null }, // Current page, no link
+      ];
+    }
+
+    // For all other pages, show: Home > Current Page
+    const currentRoute = routeConfig[location];
+    if (currentRoute) {
+      return [
+        { label: 'Home', href: '/' },
+        { label: currentRoute.breadcrumb, href: null }, // Current page, no link
+      ];
+    }
+
+    // Fallback
+    return [
+      { label: 'Home', href: '/' },
+      { label: 'Page', href: null },
+    ];
   };
+
+  const breadcrumbs = getBreadcrumbs();
 
   return (
     <div className="flex h-screen w-full">
@@ -129,13 +152,18 @@ function AppContent() {
             <Separator orientation="vertical" className="h-6" />
             <Breadcrumb>
               <BreadcrumbList>
-                <BreadcrumbItem>
-                  <BreadcrumbLink href="/">Home</BreadcrumbLink>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator />
-                <BreadcrumbItem>
-                  <BreadcrumbPage>{getCurrentBreadcrumb()}</BreadcrumbPage>
-                </BreadcrumbItem>
+                {breadcrumbs.map((crumb, index) => (
+                  <React.Fragment key={index}>
+                    <BreadcrumbItem>
+                      {crumb.href ? (
+                        <BreadcrumbLink href={crumb.href}>{crumb.label}</BreadcrumbLink>
+                      ) : (
+                        <BreadcrumbPage>{crumb.label}</BreadcrumbPage>
+                      )}
+                    </BreadcrumbItem>
+                    {index < breadcrumbs.length - 1 && <BreadcrumbSeparator />}
+                  </React.Fragment>
+                ))}
               </BreadcrumbList>
             </Breadcrumb>
           </div>

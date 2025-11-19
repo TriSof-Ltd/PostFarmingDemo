@@ -74,11 +74,6 @@ export default function Connections() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
-        <div>
-          <h1 className="text-3xl font-semibold">{t.connectionsTitle}</h1>
-          <p className="text-muted-foreground mt-1">{t.connectionsSubtitle}</p>
-        </div>
-
         {/* Collapsible Trust Card */}
         <div className="w-full lg:w-[550px]">
           <Collapsible
