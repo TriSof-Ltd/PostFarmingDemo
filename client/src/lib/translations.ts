@@ -42,7 +42,7 @@ export const translations: Record<Language, Record<string, string>> = {
         aiInsights: 'AI Insights',
         basicOverallStatistics: 'Basic Overall Statistics',
         basicStatistics: 'Basic Statistics',
-        viewStats: 'View stats & generate report',
+        viewStats: 'View statistics',
         viewDetails: 'View details',
 
         dateRange: 'Date range',

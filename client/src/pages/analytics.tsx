@@ -223,6 +223,7 @@ export default function Analytics() {
   const [contentType, setContentType] = useState<ContentType>('all');
   const [selectedMetric, setSelectedMetric] = useState<MetricType>('reach');
   const [platformFilter, setPlatformFilter] = useState<PlatformFilter>('all');
+  const [reportPlatform, setReportPlatform] = useState<PlatformFilter>('all');
   const [chartMetrics, setChartMetrics] = useState({
     views: true,
     reach: true,
@@ -368,6 +369,8 @@ export default function Analytics() {
     setIsReportModalOpen(false);
     setFromDate(undefined);
     setToDate(undefined);
+    // Reset report platform to 'all' after generation
+    setReportPlatform('all');
   };
 
   const generateReport = (platform: PlatformFilter) => {
@@ -493,7 +496,7 @@ export default function Analytics() {
             <Card
               key={platformCard.id}
               className={`cursor-pointer transition-all ${isActive
-                ? 'ring-2 ring-primary bg-primary/10 border-primary shadow-md'
+                ? 'ring-1 ring-primary bg-primary/5 border-primary shadow-md'
                 : 'hover:shadow-md hover:border-primary/50 hover:-translate-y-0.5'
                 }`}
               onClick={() => setPlatformFilter(platformCard.id)}
@@ -522,13 +525,6 @@ export default function Analytics() {
                 <p className="text-sm text-muted-foreground">{t.viewStats}</p>
               </CardHeader>
               <CardContent className="pt-0">
-                {isAll ? (
-                  <div className="h-4"></div>
-                ) : (
-                  <div className="space-y-2">
-                    <div className="h-4"></div>
-                  </div>
-                )}
               </CardContent>
             </Card>
           );
@@ -671,6 +667,20 @@ export default function Analytics() {
                     <Calendar mode="single" selected={toDate} onSelect={setToDate} initialFocus />
                   </PopoverContent>
                 </Popover>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="platform-select">Platform</Label>
+                <Select value={reportPlatform} onValueChange={(v) => setReportPlatform(v as PlatformFilter)}>
+                  <SelectTrigger id="platform-select">
+                    <SelectValue placeholder="Select platform" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Platforms</SelectItem>
+                    <SelectItem value="instagram">Instagram</SelectItem>
+                    <SelectItem value="facebook">Facebook</SelectItem>
+                    <SelectItem value="tiktok">TikTok</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
             <div className="flex justify-end gap-3 pt-4 border-t">
@@ -920,6 +930,6 @@ export default function Analytics() {
           </CardContent>
         </Card>
       </div>
-    </div>
+    </div >
   );
 }
