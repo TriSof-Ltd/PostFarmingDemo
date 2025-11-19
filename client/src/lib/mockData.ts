@@ -340,7 +340,7 @@ export function generateMockData(): AppState {
   const clientHealth: ClientHealth[] = [
     {
       clientId: '1',
-      overallScore: 72,
+      overallScore: 65,
       status: 'attention',
       lastScan: new Date('2025-11-17T16:00:00'),
       warnings: [
@@ -391,10 +391,10 @@ export function generateMockData(): AppState {
         {
           id: 'w4',
           platform: 'facebook',
-          category: 'Account',
-          severity: 'high',
+          category: 'Environment',
+          severity: 'critical',
           title: 'disapproved ads',
-          description: 'Meta: 2 disapproved ads. TikTok Ads: shared card with suspended account.',
+          description: 'Meta: 2 disapproved ads. TikTok Ads: shared card with suspended account. Critical risk of account suspension.',
           timestamp: new Date('2025-11-17T06:00:00'),
         },
       ],

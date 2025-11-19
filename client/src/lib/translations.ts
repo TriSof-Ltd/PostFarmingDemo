@@ -161,6 +161,8 @@ export const translations: Record<Language, Record<string, string>> = {
         inProgress: 'In progress',
         done: 'Done',
         linkedToAction: 'Linked to Action',
+        coldAdAccountAction: 'Warm up account with low spend ($10/day) for 3 days before scaling.',
+        followerQualityAction: 'Remove ghost followers and pause engagement bots.',
     },
     ku: {
         // Sidebar
@@ -322,6 +324,8 @@ export const translations: Record<Language, Record<string, string>> = {
         inProgress: 'لە جێبەجێکردندان',
         done: 'تەواو',
         linkedToAction: 'بەستراوە بە کردار',
+        coldAdAccountAction: 'Warm up account with low spend ($10/day) for 3 days before scaling.',
+        followerQualityAction: 'Remove ghost followers and pause engagement bots.',
     },
     ar: {
         // Sidebar
@@ -483,5 +487,7 @@ export const translations: Record<Language, Record<string, string>> = {
         inProgress: 'قيد التنفيذ',
         done: 'تم',
         linkedToAction: 'مرتبط بالإجراء',
+        coldAdAccountAction: 'Warm up account with low spend ($10/day) for 3 days before scaling.',
+        followerQualityAction: 'Remove ghost followers and pause engagement bots.',
     },
 };

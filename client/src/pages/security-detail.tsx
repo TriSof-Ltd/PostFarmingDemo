@@ -1,5 +1,6 @@
 import { useRoute, Link } from 'wouter';
 import { Shield, AlertCircle, Clock, Check, AlertTriangle, XCircle, Filter, ArrowRight } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useApp } from '@/lib/AppContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -80,12 +81,16 @@ export default function SecurityDetail() {
     { id: 3, text: t.slowDownFollowerGrowth, link: '#warning-insta', tag: 'Instagram · Growth spike' },
   ];
 
-  const toggleActionStatus = (id: number) => {
-    setActionStatus(prev => {
-      const current = prev[id];
-      const next = current === 'notStarted' ? 'inProgress' : current === 'inProgress' ? 'done' : 'notStarted';
-      return { ...prev, [id]: next };
-    });
+  const updateActionStatus = (id: number, status: 'notStarted' | 'inProgress' | 'done') => {
+    setActionStatus(prev => ({ ...prev, [id]: status }));
+  };
+
+  const getRecommendedActionText = (title: string) => {
+    const normalizedTitle = title.toLowerCase();
+    if (normalizedTitle.includes('bad actor')) return t.badActorProximityAction;
+    if (normalizedTitle.includes('cold ad')) return t.coldAdAccountAction;
+    if (normalizedTitle.includes('follower')) return t.followerQualityAction;
+    return t.badActorProximityAction; // Fallback
   };
 
   const getStatusColor = (status: 'notStarted' | 'inProgress' | 'done') => {
@@ -190,12 +195,19 @@ export default function SecurityDetail() {
                     <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-600">
                       {index + 1}
                     </div>
-                    <button
-                      onClick={() => toggleActionStatus(action.id)}
-                      className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide transition-colors ${getStatusColor(actionStatus[action.id])}`}
+                    <Select
+                      value={actionStatus[action.id]}
+                      onValueChange={(value: any) => updateActionStatus(action.id, value)}
                     >
-                      {t[actionStatus[action.id]]}
-                    </button>
+                      <SelectTrigger className={`h-auto min-h-0 w-auto text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide border-0 focus:ring-0 focus:ring-offset-0 gap-1 ${getStatusColor(actionStatus[action.id])}`}>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="notStarted">{t.notStarted}</SelectItem>
+                        <SelectItem value="inProgress">{t.inProgress}</SelectItem>
+                        <SelectItem value="done">{t.done}</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
 
                   <div>
@@ -314,7 +326,7 @@ export default function SecurityDetail() {
                       {t.recommendedAction}
                     </span>
                     <span className="text-sm text-foreground/90">
-                      {t.badActorProximityAction}
+                      {getRecommendedActionText(warning.title)}
                     </span>
                   </div>
                 </div>
