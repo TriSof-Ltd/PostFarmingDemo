@@ -82,6 +82,51 @@ export function generateMockData(): AppState {
       status: 'scheduled',
       createdAt: new Date('2025-11-17'),
     },
+    {
+      id: '3',
+      clientId: '1',
+      platforms: ['facebook'],
+      content: 'Customer appreciation post - thank you for your support!',
+      scheduledDate: new Date('2025-11-22T09:00:00'),
+      status: 'scheduled',
+      createdAt: new Date('2025-11-18'),
+    },
+    {
+      id: '4',
+      clientId: '1',
+      platforms: ['tiktok'],
+      content: 'Viral challenge attempt #1',
+      scheduledDate: new Date('2025-11-22T16:00:00'),
+      status: 'scheduled',
+      createdAt: new Date('2025-11-18'),
+    },
+    {
+      id: '5',
+      clientId: '1',
+      platforms: ['instagram'],
+      content: 'Weekend vibes 🌴',
+      scheduledDate: new Date('2025-11-22T11:00:00'),
+      status: 'scheduled',
+      createdAt: new Date('2025-11-18'),
+    },
+    {
+      id: '6',
+      clientId: '1',
+      platforms: ['facebook', 'instagram', 'tiktok'],
+      content: 'Black Friday Sale Announcement!',
+      scheduledDate: new Date('2025-11-28T08:00:00'),
+      status: 'scheduled',
+      createdAt: new Date('2025-11-15'),
+    },
+    {
+      id: '7',
+      clientId: '1',
+      platforms: ['instagram'],
+      content: 'Motivational Monday quote',
+      scheduledDate: new Date(new Date().setHours(9, 0, 0, 0)), // Today
+      status: 'scheduled',
+      createdAt: new Date('2025-11-19'),
+    },
   ];
 
   const analytics: Analytics = {
