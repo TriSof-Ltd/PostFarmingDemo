@@ -13,6 +13,7 @@ export default function Security() {
   const { state } = useApp();
   const { clientHealth } = state;
 
+
   const totalClients = state.clients.length;
   const healthyClients = clientHealth.filter((h) => h.status === 'healthy').length;
   const needsAttention = clientHealth.filter((h) => h.status === 'attention').length;
