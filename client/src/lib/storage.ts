@@ -9,11 +9,12 @@ export function loadAppState(): AppState {
     if (stored) {
       const parsed = JSON.parse(stored);
       const mockData = generateMockData();
-      
-      // Update clients from mockData while preserving other data
+
+      // Update clients and clientHealth from mockData while preserving other data
       const updatedState = {
         ...parsed,
         clients: mockData.clients, // Always use latest client data
+        clientHealth: mockData.clientHealth, // Always use latest health data
         posts: parsed.posts.map((p: any) => ({
           ...p,
           scheduledDate: new Date(p.scheduledDate),
@@ -31,20 +32,12 @@ export function loadAppState(): AppState {
           ...e,
           timestamp: new Date(e.timestamp),
         })),
-        clientHealth: parsed.clientHealth.map((h: any) => ({
-          ...h,
-          lastScan: new Date(h.lastScan),
-          warnings: h.warnings.map((w: any) => ({
-            ...w,
-            timestamp: new Date(w.timestamp),
-          })),
-        })),
         // Ensure currentClientId points to a valid client
-        currentClientId: mockData.clients.find(c => c.id === parsed.currentClientId) 
-          ? parsed.currentClientId 
+        currentClientId: mockData.clients.find(c => c.id === parsed.currentClientId)
+          ? parsed.currentClientId
           : mockData.currentClientId,
       };
-      
+
       // Save updated state
       saveAppState(updatedState);
       return updatedState;
@@ -52,7 +45,7 @@ export function loadAppState(): AppState {
   } catch (error) {
     console.error('Error loading app state:', error);
   }
-  
+
   // Initialize with mock data if nothing stored
   return generateMockData();
 }
@@ -92,7 +85,7 @@ export function deleteClient(state: AppState, clientId: string): AppState {
   const newState = {
     ...state,
     clients: filteredClients,
-    currentClientId: state.currentClientId === clientId 
+    currentClientId: state.currentClientId === clientId
       ? (filteredClients[0]?.id || null)
       : state.currentClientId,
   };
