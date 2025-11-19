@@ -20,155 +20,7 @@ type ContentType = 'all' | 'posts' | 'stories' | 'reels' | 'ads' | 'videos';
 type MetricType = 'reach' | 'likes' | 'comments' | 'shares' | 'impressions' | 'views' | 'saves';
 type PlatformFilter = 'all' | 'instagram' | 'facebook' | 'tiktok';
 
-const translations: Record<Language, Record<string, string>> = {
-  en: {
-    analytics: 'Analytics',
-    trackPerformance: 'Track your social media performance',
-    generateReport: 'Generate Report',
-    generateAllReport: 'Generate All Report',
-    generateInstagramReport: 'Generate Instagram Report',
-    generateFacebookReport: 'Generate Facebook Report',
-    generateTiktokReport: 'Generate TikTok Report',
-    refresh: 'Refresh',
-    export: 'Export',
-    downloadPDF: 'Download PDF report',
-    shareLink: 'Share link with client',
-    views: 'Views',
-    reach: 'Reach',
-    likes: 'Likes',
-    comments: 'Comments',
-    shares: 'Shares',
-    total: 'Total',
-    today: 'Today',
-    last7Days: '7 days',
-    last30Days: '30 days',
-    custom: 'Custom',
-    vsLastWeek: 'vs last week',
-    vsLastMonth: 'vs last month',
-    engagementOverTime: 'Engagement Over Time',
-    platformComparison: 'Platform Comparison',
-    aiInsights: 'AI Insights',
-    basicOverallStatistics: 'Basic Overall Statistics',
-    basicStatistics: 'Basic Statistics',
-    viewStats: 'View stats & generate report',
-    viewDetails: 'View details',
-    all: 'All',
-    dateRange: 'Date range',
-    contentType: 'Content type',
-    performanceOverview: 'Performance Overview',
-    performanceOverviewSubtitle: 'Across selected platforms & date range',
-    copyInsight: 'Copy insight',
-    addToReport: 'Add to report',
-    posts: 'Posts',
-    stories: 'Stories',
-    reels: 'Reels',
-    ads: 'Ads',
-    videos: 'Videos',
-    impressions: 'Impressions',
-    saves: 'Saves',
-    facebook: 'Facebook',
-    instagram: 'Instagram',
-    tiktok: 'TikTok',
-  },
-  ku: {
-    analytics: 'شیکردنەوە',
-    trackPerformance: 'شیکردنەوەی کارکردنی میدیای کۆمەڵایەتی',
-    generateReport: 'دروستکردنی راپۆرت',
-    generateAllReport: 'دروستکردنی راپۆرتی هەموو',
-    generateInstagramReport: 'دروستکردنی راپۆرتی ئینستاگرام',
-    generateFacebookReport: 'دروستکردنی راپۆرتی فەیسبووک',
-    generateTiktokReport: 'دروستکردنی راپۆرتی تیکتۆک',
-    refresh: 'نوێکردنەوە',
-    export: 'دەرهێنان',
-    downloadPDF: 'داگرتنی راپۆرتی PDF',
-    shareLink: 'هاوبەشکردنی لینک لەگەڵ کڕیار',
-    views: 'بینین',
-    reach: 'گەیشتن',
-    likes: 'پێدەوەستن',
-    comments: 'کۆمێنت',
-    shares: 'هاوبەشکردن',
-    total: 'کۆی گشتی',
-    today: 'ئەمڕۆ',
-    last7Days: '٧ ڕۆژ',
-    last30Days: '٣٠ ڕۆژ',
-    custom: 'تایبەت',
-    vsLastWeek: 'بەراورد لەگەڵ هەفتەی پێشوو',
-    vsLastMonth: 'بەراورد لەگەڵ مانگی پێشوو',
-    engagementOverTime: 'بەشداری بە درێژایی کات',
-    platformComparison: 'بەراوردی پلاتفۆرم',
-    aiInsights: 'بینینی AI',
-    basicOverallStatistics: 'ئامارە بنەڕەتییەکانی گشتی',
-    basicStatistics: 'ئامارە بنەڕەتییەکان',
-    viewStats: 'بینینی ئامار و دروستکردنی راپۆرت',
-    viewDetails: 'بینینی وردەکارییەکان',
-    all: 'هەموو',
-    dateRange: 'ماوەی بڕیار',
-    contentType: 'جۆری ناوەڕۆک',
-    performanceOverview: 'نیشاندانی کارکردن',
-    performanceOverviewSubtitle: 'لە پلاتفۆرم و ماوەی بڕیار هەڵبژێردراو',
-    copyInsight: 'لەبەرگرتنەوەی بینین',
-    addToReport: 'زیادکردن بۆ راپۆرت',
-    posts: 'پۆست',
-    stories: 'چیرۆک',
-    reels: 'ریڵ',
-    ads: 'ریکلام',
-    videos: 'ڤیدیۆ',
-    impressions: 'بەرچاوکەوتن',
-    saves: 'پاشەکەوت',
-    facebook: 'فەیسبووک',
-    instagram: 'ئینستاگرام',
-    tiktok: 'تیکتۆک',
-  },
-  ar: {
-    analytics: 'التحليلات',
-    trackPerformance: 'تتبع أداء وسائل التواصل الاجتماعي',
-    generateReport: 'إنشاء تقرير',
-    generateAllReport: 'إنشاء تقرير شامل',
-    generateInstagramReport: 'إنشاء تقرير إنستغرام',
-    generateFacebookReport: 'إنشاء تقرير فيسبوك',
-    generateTiktokReport: 'إنشاء تقرير تيك توك',
-    refresh: 'تحديث',
-    export: 'تصدير',
-    downloadPDF: 'تحميل تقرير PDF',
-    shareLink: 'مشاركة رابط مع العميل',
-    views: 'المشاهدات',
-    reach: 'الوصول',
-    likes: 'الإعجابات',
-    comments: 'التعليقات',
-    shares: 'المشاركات',
-    total: 'المجموع',
-    today: 'اليوم',
-    last7Days: '٧ أيام',
-    last30Days: '٣٠ يوم',
-    custom: 'مخصص',
-    vsLastWeek: 'مقارنة بالأسبوع الماضي',
-    vsLastMonth: 'مقارنة بالشهر الماضي',
-    engagementOverTime: 'التفاعل بمرور الوقت',
-    platformComparison: 'مقارنة المنصات',
-    aiInsights: 'رؤى الذكاء الاصطناعي',
-    basicOverallStatistics: 'الإحصائيات الأساسية الشاملة',
-    basicStatistics: 'الإحصائيات الأساسية',
-    viewStats: 'عرض الإحصائيات وإنشاء تقرير',
-    viewDetails: 'عرض التفاصيل',
-    all: 'الكل',
-    dateRange: 'نطاق التاريخ',
-    contentType: 'نوع المحتوى',
-    performanceOverview: 'نظرة عامة على الأداء',
-    performanceOverviewSubtitle: 'عبر المنصات ونطاق التاريخ المحدد',
-    copyInsight: 'نسخ الرؤية',
-    addToReport: 'إضافة إلى التقرير',
-    posts: 'المنشورات',
-    stories: 'القصص',
-    reels: 'الريلز',
-    ads: 'الإعلانات',
-    videos: 'الفيديوهات',
-    impressions: 'الانطباعات',
-    saves: 'الحفظ',
-    facebook: 'فيسبوك',
-    instagram: 'إنستغرام',
-    tiktok: 'تيك توك',
-  },
-};
+import { translations } from '@/lib/translations';
 
 // Content type multipliers (used for calculations)
 const contentTypeMultipliers: Record<ContentType, number> = {
@@ -427,12 +279,12 @@ export default function Analytics() {
   };
 
   // Calculate totals
-  const totalReach = analytics.byPlatform.facebook.views + 
-    (analytics.byPlatform.instagram.reach || analytics.byPlatform.instagram.views) + 
+  const totalReach = analytics.byPlatform.facebook.views +
+    (analytics.byPlatform.instagram.reach || analytics.byPlatform.instagram.views) +
     analytics.byPlatform.tiktok.views;
-  
-  const prevTotalReach = getPreviousPeriodData.byPlatform.facebook.views + 
-    (getPreviousPeriodData.byPlatform.instagram.reach || getPreviousPeriodData.byPlatform.instagram.views) + 
+
+  const prevTotalReach = getPreviousPeriodData.byPlatform.facebook.views +
+    (getPreviousPeriodData.byPlatform.instagram.reach || getPreviousPeriodData.byPlatform.instagram.views) +
     getPreviousPeriodData.byPlatform.tiktok.views;
 
   const totalEngagement = analytics.totalLikes + analytics.totalComments + analytics.totalShares;
@@ -485,19 +337,19 @@ export default function Analytics() {
     const days = dateRange === 'today' ? 1 : dateRange === '7days' ? 7 : dateRange === '30days' ? 30 : (fromDate && toDate ? differenceInDays(toDate, fromDate) : 7);
     const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
     const multiplier = contentTypeMultipliers[contentType];
-    
+
     // Adjust base values based on platform filter
     let baseMultiplier = 1;
     if (platformFilter === 'instagram') baseMultiplier = 10;
     else if (platformFilter === 'facebook') baseMultiplier = 1;
     else if (platformFilter === 'tiktok') baseMultiplier = 0.5;
-    
+
     return Array.from({ length: Math.min(days, 7) }, (_, i) => {
       const baseViews = (50 + Math.random() * 100) * multiplier * baseMultiplier;
       const baseReach = baseViews * 1.2;
       const baseLikes = baseViews * 0.15;
       const baseComments = baseViews * 0.05;
-      
+
       return {
         name: dayNames[i % 7],
         views: Math.round(baseViews),
@@ -610,10 +462,10 @@ export default function Analytics() {
           </div>
         </div>
         <div className="flex gap-3">
-        <Button variant="outline" onClick={refreshAnalytics} data-testid="button-refresh">
-          <RefreshCw className="mr-2 h-4 w-4" />
+          <Button variant="outline" onClick={refreshAnalytics} data-testid="button-refresh">
+            <RefreshCw className="mr-2 h-4 w-4" />
             {t.refresh}
-        </Button>
+          </Button>
         </div>
       </div>
 
@@ -623,25 +475,24 @@ export default function Analytics() {
           const Icon = platformCard.icon;
           const isActive = platformFilter === platformCard.id;
           const isAll = platformCard.id === 'all';
-          
+
           // Get micro-metric for platform cards
           const getMicroMetric = () => {
             if (platformCard.id === 'all') return null;
             const platformData = analytics.byPlatform[platformCard.id as 'facebook' | 'instagram' | 'tiktok'];
-            const metric = platformCard.id === 'instagram' 
+            const metric = platformCard.id === 'instagram'
               ? (platformData.reach || platformData.views)
               : platformData.views;
             return metric.toLocaleString();
           };
-          
+
           return (
             <Card
               key={platformCard.id}
-              className={`cursor-pointer transition-all ${
-                isActive
+              className={`cursor-pointer transition-all ${isActive
                   ? 'ring-2 ring-primary bg-primary/10 border-primary shadow-md'
                   : 'hover:shadow-md hover:border-primary/50 hover:-translate-y-0.5'
-              }`}
+                }`}
               onClick={() => setPlatformFilter(platformCard.id)}
             >
               <CardHeader className="pb-3">
@@ -778,10 +629,10 @@ export default function Analytics() {
           <div className="flex items-center gap-2 flex-wrap">
             {availableContentTypes.map((type) => {
               // Map 'videos' to appropriate label for TikTok
-              const label = type === 'videos' && platformFilter === 'tiktok' 
-                ? 'Videos' 
+              const label = type === 'videos' && platformFilter === 'tiktok'
+                ? 'Videos'
                 : t[type as keyof typeof t];
-          return (
+              return (
                 <Button
                   key={type}
                   variant={contentType === type ? 'default' : 'outline'}
@@ -824,7 +675,7 @@ export default function Analytics() {
                     <Calendar mode="single" selected={fromDate} onSelect={setFromDate} initialFocus />
                   </PopoverContent>
                 </Popover>
-                    </div>
+              </div>
               <div className="space-y-2">
                 <Label htmlFor="to-date">To Date</Label>
                 <Popover>
@@ -842,8 +693,8 @@ export default function Analytics() {
                     <Calendar mode="single" selected={toDate} onSelect={setToDate} initialFocus />
                   </PopoverContent>
                 </Popover>
-                  </div>
-                </div>
+              </div>
+            </div>
             <div className="flex justify-end gap-3 pt-4 border-t">
               <Button variant="outline" onClick={() => setIsReportModalOpen(false)}>
                 Cancel
@@ -851,16 +702,16 @@ export default function Analytics() {
               <Button onClick={handleGenerateReport} disabled={!fromDate || !toDate}>
                 Generate Report
               </Button>
-                    </div>
-                  </div>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
 
       {/* Main Statistics Section */}
       <div className="space-y-6">
-                  <div>
+        <div>
           <h2 className="text-2xl font-semibold mb-2">{getStatisticsTitle()}</h2>
-                  </div>
+        </div>
 
         {/* Metric Cards with Change Indicators */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
@@ -878,12 +729,12 @@ export default function Analytics() {
                   <div className={`flex items-center gap-1 text-xs font-medium ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
                     <span>{isPositive ? '↑' : '↓'}</span>
                     <span>{Math.abs(change)}% {getComparisonLabel()}</span>
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
       </div>
 
       {/* Performance Overview Section */}
@@ -894,8 +745,8 @@ export default function Analytics() {
         </div>
 
         {/* Charts */}
-      <div className="grid gap-6 md:grid-cols-2">
-        <Card>
+        <div className="grid gap-6 md:grid-cols-2">
+          <Card>
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-base">{t.engagementOverTime}</CardTitle>
@@ -914,21 +765,21 @@ export default function Analytics() {
                   </Toggle>
                 </div>
               </div>
-          </CardHeader>
-          <CardContent>
+            </CardHeader>
+            <CardContent>
               <div style={{ width: '100%', height: '320px' }}>
                 <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                <XAxis dataKey="name" className="text-xs" />
-                <YAxis className="text-xs" />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: 'hsl(var(--card))',
-                    border: '1px solid hsl(var(--border))',
-                    borderRadius: '8px',
-                  }}
-                />
+                  <LineChart data={chartData}>
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                    <XAxis dataKey="name" className="text-xs" />
+                    <YAxis className="text-xs" />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: 'hsl(var(--card))',
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '8px',
+                      }}
+                    />
                     {chartMetrics.views && (
                       <Line type="monotone" dataKey="views" stroke="#3b82f6" strokeWidth={2} name={platformFilter === 'all' ? t.views : platformMetrics.views} />
                     )}
@@ -942,14 +793,14 @@ export default function Analytics() {
                       <Line type="monotone" dataKey="comments" stroke="#10b981" strokeWidth={2} name={platformMetrics.comments} />
                     )}
                     <Legend />
-              </LineChart>
-            </ResponsiveContainer>
+                  </LineChart>
+                </ResponsiveContainer>
               </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardHeader className="pb-3">
+          <Card>
+            <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-base">{t.platformComparison}</CardTitle>
                 <Select value={selectedMetric} onValueChange={(v) => setSelectedMetric(v as MetricType)}>
@@ -964,62 +815,62 @@ export default function Analytics() {
                   </SelectContent>
                 </Select>
               </div>
-          </CardHeader>
-          <CardContent>
+            </CardHeader>
+            <CardContent>
               <div style={{ width: '100%', height: '320px' }}>
                 <ResponsiveContainer width="100%" height="100%">
-              <BarChart
+                  <BarChart
                     data={
                       platformFilter === 'all'
                         ? [
-                            {
-                              name: t.facebook,
-                              reach: analytics.byPlatform.facebook.views,
-                              likes: analytics.byPlatform.facebook.likes,
-                              comments: analytics.byPlatform.facebook.comments,
-                              shares: analytics.byPlatform.facebook.shares,
-                            },
-                            {
-                              name: t.instagram,
-                              reach: analytics.byPlatform.instagram.reach || analytics.byPlatform.instagram.views,
-                              likes: analytics.byPlatform.instagram.likes,
-                              comments: analytics.byPlatform.instagram.comments,
-                              shares: analytics.byPlatform.instagram.shares,
-                            },
-                            {
-                              name: t.tiktok,
-                              reach: analytics.byPlatform.tiktok.views,
-                              likes: analytics.byPlatform.tiktok.likes,
-                              comments: analytics.byPlatform.tiktok.comments,
-                              shares: analytics.byPlatform.tiktok.shares,
-                            },
-                          ]
+                          {
+                            name: t.facebook,
+                            reach: analytics.byPlatform.facebook.views,
+                            likes: analytics.byPlatform.facebook.likes,
+                            comments: analytics.byPlatform.facebook.comments,
+                            shares: analytics.byPlatform.facebook.shares,
+                          },
+                          {
+                            name: t.instagram,
+                            reach: analytics.byPlatform.instagram.reach || analytics.byPlatform.instagram.views,
+                            likes: analytics.byPlatform.instagram.likes,
+                            comments: analytics.byPlatform.instagram.comments,
+                            shares: analytics.byPlatform.instagram.shares,
+                          },
+                          {
+                            name: t.tiktok,
+                            reach: analytics.byPlatform.tiktok.views,
+                            likes: analytics.byPlatform.tiktok.likes,
+                            comments: analytics.byPlatform.tiktok.comments,
+                            shares: analytics.byPlatform.tiktok.shares,
+                          },
+                        ]
                         : [
-                            {
-                              name: platformFilterCards.find(p => p.id === platformFilter)?.name || '',
-                              reach: platformFilter === 'instagram' 
-                                ? (analytics.byPlatform.instagram.reach || analytics.byPlatform.instagram.views)
-                                : analytics.byPlatform[platformFilter as 'facebook' | 'tiktok'].views,
-                              likes: analytics.byPlatform[platformFilter as 'facebook' | 'instagram' | 'tiktok'].likes,
-                              comments: analytics.byPlatform[platformFilter as 'facebook' | 'instagram' | 'tiktok'].comments,
-                              shares: analytics.byPlatform[platformFilter as 'facebook' | 'instagram' | 'tiktok'].shares,
-                            },
-                          ]
+                          {
+                            name: platformFilterCards.find(p => p.id === platformFilter)?.name || '',
+                            reach: platformFilter === 'instagram'
+                              ? (analytics.byPlatform.instagram.reach || analytics.byPlatform.instagram.views)
+                              : analytics.byPlatform[platformFilter as 'facebook' | 'tiktok'].views,
+                            likes: analytics.byPlatform[platformFilter as 'facebook' | 'instagram' | 'tiktok'].likes,
+                            comments: analytics.byPlatform[platformFilter as 'facebook' | 'instagram' | 'tiktok'].comments,
+                            shares: analytics.byPlatform[platformFilter as 'facebook' | 'instagram' | 'tiktok'].shares,
+                          },
+                        ]
                     }
-              >
-                <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                <XAxis dataKey="name" className="text-xs" />
-                <YAxis className="text-xs" />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: 'hsl(var(--card))',
-                    border: '1px solid hsl(var(--border))',
-                    borderRadius: '8px',
-                  }}
-                />
+                  >
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                    <XAxis dataKey="name" className="text-xs" />
+                    <YAxis className="text-xs" />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: 'hsl(var(--card))',
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '8px',
+                      }}
+                    />
                     <Bar dataKey={selectedMetric} fill="#3b82f6" />
-              </BarChart>
-            </ResponsiveContainer>
+                  </BarChart>
+                </ResponsiveContainer>
               </div>
             </CardContent>
           </Card>
@@ -1039,7 +890,7 @@ export default function Analytics() {
                   size="sm"
                   className="text-xs"
                   onClick={() => {
-                    const insightText = platformFilter === 'all' 
+                    const insightText = platformFilter === 'all'
                       ? `This week: ${t.instagram} drove 87% of engagement. Best performing day: Friday. Suggested: post more Reels on Thu–Fri 18:00–21:00.`
                       : `Best performing day: Friday. Suggested: post more ${platformFilter === 'tiktok' ? 'videos' : 'Reels'} on Thu–Fri 18:00–21:00.`;
                     navigator.clipboard.writeText(insightText);

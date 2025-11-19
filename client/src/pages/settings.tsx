@@ -5,21 +5,27 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useApp } from '@/lib/AppContext';
+import { translations } from '@/lib/translations';
 
 export default function Settings() {
+  const { language, setLanguage } = useApp();
+  const t = translations[language];
+
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-semibold">Settings</h1>
-        <p className="text-muted-foreground mt-1">Manage your account and application preferences</p>
+        <h1 className="text-3xl font-semibold">{t.settingsTitle}</h1>
+        <p className="text-muted-foreground mt-1">{t.settingsSubtitle}</p>
       </div>
 
       <div className="grid gap-6">
         {/* Profile Settings */}
         <Card>
           <CardHeader>
-            <CardTitle>Profile</CardTitle>
-            <CardDescription>Manage your profile information</CardDescription>
+            <CardTitle>{t.profile}</CardTitle>
+            <CardDescription>{t.profileDesc}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="flex items-center gap-4">
@@ -28,18 +34,18 @@ export default function Settings() {
                 <AvatarFallback>U</AvatarFallback>
               </Avatar>
               <div className="space-y-2">
-                <Button variant="outline" size="sm" data-testid="button-change-avatar">Change Avatar</Button>
+                <Button variant="outline" size="sm" data-testid="button-change-avatar">{t.changeAvatar}</Button>
                 <p className="text-xs text-muted-foreground">JPG, PNG or GIF. Max size 2MB.</p>
               </div>
             </div>
             <Separator />
             <div className="grid gap-4">
               <div className="grid gap-2">
-                <Label htmlFor="name">Full Name</Label>
+                <Label htmlFor="name">{t.fullName}</Label>
                 <Input id="name" defaultValue="uhakdt@gmail.com" data-testid="input-profile-name" />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">{t.email}</Label>
                 <Input id="email" type="email" defaultValue="uhakdt@gmail.com" data-testid="input-profile-email" />
               </div>
             </div>
@@ -49,30 +55,30 @@ export default function Settings() {
         {/* Notifications */}
         <Card>
           <CardHeader>
-            <CardTitle>Notifications</CardTitle>
-            <CardDescription>Configure how you receive notifications</CardDescription>
+            <CardTitle>{t.notifications}</CardTitle>
+            <CardDescription>{t.notificationsDesc}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <Label>Email Notifications</Label>
-                <p className="text-sm text-muted-foreground">Receive email updates about your accounts</p>
+                <Label>{t.emailNotifications}</Label>
+                <p className="text-sm text-muted-foreground">{t.emailNotificationsDesc}</p>
               </div>
               <Switch defaultChecked data-testid="switch-email-notifications" />
             </div>
             <Separator />
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <Label>Post Reminders</Label>
-                <p className="text-sm text-muted-foreground">Get notified before scheduled posts</p>
+                <Label>{t.postReminders}</Label>
+                <p className="text-sm text-muted-foreground">{t.postRemindersDesc}</p>
               </div>
               <Switch defaultChecked data-testid="switch-post-reminders" />
             </div>
             <Separator />
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <Label>Security Alerts</Label>
-                <p className="text-sm text-muted-foreground">Important security notifications</p>
+                <Label>{t.securityAlerts}</Label>
+                <p className="text-sm text-muted-foreground">{t.securityAlertsDesc}</p>
               </div>
               <Switch defaultChecked data-testid="switch-security-alerts" />
             </div>
@@ -82,22 +88,41 @@ export default function Settings() {
         {/* Preferences */}
         <Card>
           <CardHeader>
-            <CardTitle>Preferences</CardTitle>
-            <CardDescription>Customize your application experience</CardDescription>
+            <CardTitle>{t.preferences}</CardTitle>
+            <CardDescription>{t.preferencesDesc}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <Label>Auto-Save Drafts</Label>
-                <p className="text-sm text-muted-foreground">Automatically save post drafts</p>
+                <Label>{t.language}</Label>
+                <p className="text-sm text-muted-foreground">{t.languageDesc}</p>
+              </div>
+              <div className="w-[180px]">
+                <Select value={language} onValueChange={(value: any) => setLanguage(value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select language" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="en">{t.english}</SelectItem>
+                    <SelectItem value="ku">{t.kurdish}</SelectItem>
+                    <SelectItem value="ar">{t.arabic}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <Separator />
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>{t.autoSaveDrafts}</Label>
+                <p className="text-sm text-muted-foreground">{t.autoSaveDraftsDesc}</p>
               </div>
               <Switch defaultChecked data-testid="switch-auto-save" />
             </div>
             <Separator />
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <Label>Show Calendar Previews</Label>
-                <p className="text-sm text-muted-foreground">Display post previews in calendar view</p>
+                <Label>{t.showCalendarPreviews}</Label>
+                <p className="text-sm text-muted-foreground">{t.showCalendarPreviewsDesc}</p>
               </div>
               <Switch defaultChecked data-testid="switch-calendar-previews" />
             </div>
@@ -105,8 +130,8 @@ export default function Settings() {
         </Card>
 
         <div className="flex justify-end gap-3">
-          <Button variant="outline">Cancel</Button>
-          <Button data-testid="button-save-settings">Save Changes</Button>
+          <Button variant="outline">{t.cancel}</Button>
+          <Button data-testid="button-save-settings">{t.saveChanges}</Button>
         </div>
       </div>
     </div>

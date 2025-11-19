@@ -8,13 +8,12 @@ import { Label } from '@/components/ui/label';
 import { Link } from 'wouter';
 import { format } from 'date-fns';
 import type { HealthStatus, SeverityLevel } from '@/lib/types';
+import { translations } from '@/lib/translations';
 
 export default function Security() {
-  const { state } = useApp();
+  const { state, language } = useApp();
   const { clientHealth } = state;
-
-
-
+  const t = translations[language];
 
   const getStatusColor = (status: HealthStatus) => {
     switch (status) {
@@ -38,6 +37,19 @@ export default function Security() {
     }
   };
 
+  const getStatusLabel = (status: HealthStatus) => {
+    switch (status) {
+      case 'healthy':
+        return t.healthy;
+      case 'attention':
+        return t.needsAttention;
+      case 'high-risk':
+        return t.highRisk;
+      default:
+        return status;
+    }
+  };
+
   const getSeverityColor = (severity: SeverityLevel) => {
     switch (severity) {
       case 'low':
@@ -55,9 +67,9 @@ export default function Security() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-semibold">Security & Account Health</h1>
+          <h1 className="text-3xl font-semibold">{t.securityTitle}</h1>
           <p className="text-muted-foreground mt-1">
-            Portfolio view of all your client companies and the health of their connected social accounts.
+            {t.securitySubtitle}
           </p>
         </div>
       </div>
@@ -67,19 +79,19 @@ export default function Security() {
       {/* Connected Clients */}
       <Card>
         <CardHeader>
-          <CardTitle>Connected clients</CardTitle>
+          <CardTitle>{t.connectedClients}</CardTitle>
           <CardDescription>
-            High-level health and recent issues per client. Click a row to open a detailed health page for that company.
+            {t.connectedClientsDesc}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-1">
             {/* Header */}
             <div className="grid grid-cols-12 gap-4 px-4 py-3 text-sm font-medium text-muted-foreground border-b">
-              <div className="col-span-3">CLIENT</div>
-              <div className="col-span-2">ACCOUNT HEALTH</div>
-              <div className="col-span-5">RECENT ISSUES & RISKS</div>
-              <div className="col-span-2 text-right">LAST SCAN</div>
+              <div className="col-span-3">{t.clientHeader}</div>
+              <div className="col-span-2">{t.accountHealthHeader}</div>
+              <div className="col-span-5">{t.recentIssuesHeader}</div>
+              <div className="col-span-2 text-right">{t.lastScanHeader}</div>
             </div>
 
             {/* Rows */}
@@ -107,7 +119,7 @@ export default function Security() {
                     <div className="col-span-2 flex items-center">
                       <Badge variant="secondary" className={`gap-1.5 ${getStatusColor(health.status)}`}>
                         {getStatusIcon(health.status)}
-                        <span className="capitalize">{health.status === 'attention' ? 'Needs attention' : health.status}</span>
+                        <span className="capitalize">{getStatusLabel(health.status)}</span>
                       </Badge>
                     </div>
 
@@ -116,9 +128,9 @@ export default function Security() {
                     </div>
 
                     <div className="col-span-2 flex items-center justify-end gap-2">
-                      <span className="text-sm text-muted-foreground">{format(new Date(health.lastScan), 'p')} ago</span>
+                      <span className="text-sm text-muted-foreground">{format(new Date(health.lastScan), 'p')} {t.ago}</span>
                       <Button variant="ghost" size="sm" className="text-primary" data-testid={`button-view-health-${health.clientId}`}>
-                        View health »
+                        {t.viewHealth} »
                       </Button>
                     </div>
                   </div>
@@ -132,21 +144,21 @@ export default function Security() {
       {/* Alerts & Notifications */}
       <Card>
         <CardHeader>
-          <CardTitle>Alerts & notifications</CardTitle>
+          <CardTitle>{t.alertsNotifications}</CardTitle>
           <CardDescription>
-            Get an email when any client's account health becomes risky so your team can act before platforms apply restrictions.
+            {t.alertsNotificationsDesc}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             <div>
-              <div className="font-medium mb-2">Email alerts for risky client health</div>
+              <div className="font-medium mb-2">{t.emailAlertsTitle}</div>
               <p className="text-sm text-muted-foreground mb-4">
-                We'll notify you if we detect aggressive posting, spam patterns or other behaviour that might lead to temporary limits or blocks on any connected client.
+                {t.emailAlertsDesc}
               </p>
               <div className="flex items-center gap-2">
                 <Switch defaultChecked id="email-alerts" data-testid="switch-email-alerts" />
-                <Label htmlFor="email-alerts" className="cursor-pointer">Enable email alerts</Label>
+                <Label htmlFor="email-alerts" className="cursor-pointer">{t.enableEmailAlerts}</Label>
               </div>
             </div>
           </div>
