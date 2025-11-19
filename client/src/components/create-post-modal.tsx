@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { X, Upload, Sparkles, Calendar as CalendarIcon } from 'lucide-react';
 import { SiFacebook, SiInstagram, SiTiktok } from 'react-icons/si';
 import { useApp } from '@/lib/AppContext';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
@@ -13,6 +13,15 @@ import { format } from 'date-fns';
 import type { Platform } from '@/lib/types';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
+type MediaItemType = "image" | "video" | "report";
+
+interface MediaItem {
+  id: string;
+  type: MediaItemType;
+  label: string;
+  thumbnailUrl?: string;
+}
+
 interface CreatePostModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -22,10 +31,23 @@ export function CreatePostModal({ open, onOpenChange }: CreatePostModalProps) {
   const { currentClient, addPost } = useApp();
   const { toast } = useToast();
   const [content, setContent] = useState('');
-  const [selectedPlatforms, setSelectedPlatforms] = useState<Platform[]>([]);
+  const [selectedAccountIds, setSelectedAccountIds] = useState<string[]>([]);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date>();
   const [selectedTime, setSelectedTime] = useState('10:00');
+  const [mediaItems, setMediaItems] = useState<MediaItem[]>([
+    {
+      id: "report-1",
+      type: "report",
+      label: "Security & Account Health – Alat Cars",
+      thumbnailUrl: "/placeholder-report-thumbnail.png",
+    },
+  ]);
+  const [primaryMediaId, setPrimaryMediaId] = useState<string | null>("report-1");
+  const [previewPlatform, setPreviewPlatform] = useState<Platform | null>(null);
+
+  // Get primary media item
+  const primaryMedia = mediaItems.find(item => item.id === primaryMediaId);
 
   const connectedAccounts = currentClient?.connectedAccounts.filter(acc => acc.isConnected) || [];
 
@@ -41,11 +63,11 @@ export function CreatePostModal({ open, onOpenChange }: CreatePostModalProps) {
     }
   }, [open, currentClient, toast, onOpenChange]);
 
-  const togglePlatform = (platform: Platform) => {
-    setSelectedPlatforms(prev =>
-      prev.includes(platform)
-        ? prev.filter(p => p !== platform)
-        : [...prev, platform]
+  const toggleAccount = (accountId: string) => {
+    setSelectedAccountIds(prev =>
+      prev.includes(accountId)
+        ? prev.filter(id => id !== accountId)
+        : [...prev, accountId]
     );
   };
 
@@ -54,7 +76,17 @@ export function CreatePostModal({ open, onOpenChange }: CreatePostModalProps) {
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setImagePreview(reader.result as string);
+        const newMediaItem: MediaItem = {
+          id: `upload-${Date.now()}`,
+          type: file.type.startsWith('video/') ? 'video' : 'image',
+          label: file.name,
+          thumbnailUrl: reader.result as string,
+        };
+        setMediaItems(items => [...items, newMediaItem]);
+        // Set as primary if it's the first item
+        if (mediaItems.length === 0) {
+          setPrimaryMediaId(newMediaItem.id);
+        }
       };
       reader.readAsDataURL(file);
     }
@@ -80,10 +112,10 @@ export function CreatePostModal({ open, onOpenChange }: CreatePostModalProps) {
       return;
     }
 
-    if (selectedPlatforms.length === 0) {
+    if (selectedAccountIds.length === 0) {
       toast({
-        title: 'Select platforms',
-        description: 'Please select at least one platform',
+        title: 'Select accounts',
+        description: 'Please select at least one account',
         variant: 'destructive',
       });
       return;
@@ -93,12 +125,16 @@ export function CreatePostModal({ open, onOpenChange }: CreatePostModalProps) {
       ? new Date(`${format(selectedDate, 'yyyy-MM-dd')}T${selectedTime}:00`)
       : new Date(Date.now() + 3600000); // Default to 1 hour from now
 
+    // Derive platforms from selected account IDs
+    const selectedAccounts = connectedAccounts.filter(acc => selectedAccountIds.includes(acc.id));
+    const platforms = selectedAccounts.map(acc => acc.platform);
+
     const newPost = {
       id: Date.now().toString(),
       clientId: currentClient.id,
-      platforms: selectedPlatforms,
+      platforms,
       content,
-      imageUrl: imagePreview || undefined,
+      imageUrl: primaryMedia?.thumbnailUrl || undefined,
       scheduledDate,
       status: 'scheduled' as const,
       createdAt: new Date(),
@@ -112,7 +148,7 @@ export function CreatePostModal({ open, onOpenChange }: CreatePostModalProps) {
 
     // Reset form
     setContent('');
-    setSelectedPlatforms([]);
+    setSelectedAccountIds([]);
     setImagePreview(null);
     setSelectedDate(undefined);
     onOpenChange(false);
@@ -132,343 +168,472 @@ export function CreatePostModal({ open, onOpenChange }: CreatePostModalProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto" data-testid="modal-create-post">
-        <DialogHeader>
-          <DialogTitle className="text-2xl font-semibold">Create Post</DialogTitle>
+        <DialogHeader className="mb-4">
+          <DialogTitle className="text-xl font-semibold">Create post</DialogTitle>
+          <DialogDescription>
+            Plan and schedule posts for your connected accounts.
+          </DialogDescription>
         </DialogHeader>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Left Side - Form */}
-          <div className="space-y-6">
+          <div>
             {/* Platform Selection */}
             <div>
-            <Label className="text-sm font-medium mb-3 block">Select Accounts</Label>
-            <div className="flex gap-4">
-              {connectedAccounts.map((account) => {
-                const platformInfo = platformIcons[account.platform];
-                const Icon = platformInfo.icon;
-                const isSelected = selectedPlatforms.includes(account.platform);
+              <h3 className="text-sm font-medium text-slate-900 mb-2">Select accounts</h3>
+              <p className="text-xs text-slate-500 mb-3">
+                Choose which profiles this post will be published to.
+              </p>
+              <div className="grid grid-cols-3 gap-3">
+                {connectedAccounts.map((account) => {
+                  const platformInfo = platformIcons[account.platform];
+                  const Icon = platformInfo.icon;
+                  const isSelected = selectedAccountIds.includes(account.id);
 
-                return (
-                  <button
-                    key={account.id}
-                    onClick={() => togglePlatform(account.platform)}
-                    className={`flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-all hover-elevate ${
-                      isSelected ? 'border-primary bg-accent' : 'border-border'
-                    }`}
-                    data-testid={`platform-${account.platform}`}
-                  >
-                    <div className="relative">
-                      <Avatar className="h-12 w-12">
-                        <AvatarImage src={account.avatar} alt={account.username} />
-                        <AvatarFallback>{account.username[0].toUpperCase()}</AvatarFallback>
-                      </Avatar>
-                      <div
-                        className="absolute -bottom-1 -right-1 h-5 w-5 rounded-full flex items-center justify-center"
-                        style={{ backgroundColor: platformInfo.color }}
-                      >
-                        <Icon className="h-3 w-3 text-white" />
+                  return (
+                    <button
+                      key={account.id}
+                      onClick={() => toggleAccount(account.id)}
+                      className={`relative flex items-center gap-3 p-3 rounded-lg border transition-all hover:border-primary/50 ${isSelected
+                        ? 'border-primary bg-primary/5 ring-2 ring-primary/20'
+                        : 'border-border hover:bg-accent/50'
+                        }`}
+                      data-testid={`platform-${account.platform}`}
+                    >
+                      {isSelected && (
+                        <div className="absolute top-1.5 right-1.5 bg-primary text-primary-foreground text-[10px] font-medium px-1.5 py-0.5 rounded">
+                          Selected
+                        </div>
+                      )}
+                      <div className="relative shrink-0">
+                        <Avatar className="h-8 w-8">
+                          <AvatarImage src={account.avatar} alt={account.username} />
+                          <AvatarFallback>{account.username[0].toUpperCase()}</AvatarFallback>
+                        </Avatar>
+                        <div
+                          className="absolute -bottom-1 -right-1 h-4 w-4 rounded-full flex items-center justify-center ring-2 ring-background"
+                          style={{ backgroundColor: platformInfo.color }}
+                        >
+                          <Icon className="h-2.5 w-2.5 text-white" />
+                        </div>
                       </div>
-                    </div>
-                    <span className="text-xs font-medium">{account.username}</span>
-                  </button>
-                );
-              })}
-            </div>
+                      <div className="flex flex-col items-start min-w-0">
+                        <span className="text-sm font-medium truncate w-full text-left">
+                          {account.username}
+                        </span>
+                        <span className="text-[10px] text-muted-foreground capitalize">
+                          {account.platform}
+                        </span>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+              <div className="mt-3 text-xs text-slate-600">
+                {selectedAccountIds.length === 0 ? (
+                  <span>No accounts selected yet.</span>
+                ) : selectedAccountIds.length === 1 ? (
+                  <span>
+                    Posting to: <strong>{connectedAccounts.find(a => a.id === selectedAccountIds[0])?.username}</strong>
+                  </span>
+                ) : (
+                  <span>
+                    Posting to: <strong>{connectedAccounts.find(a => a.id === selectedAccountIds[0])?.username}</strong>,{' '}
+                    <strong>{connectedAccounts.find(a => a.id === selectedAccountIds[1])?.username}</strong>
+                    {selectedAccountIds.length > 2 && ` (+${selectedAccountIds.length - 2} more)`}
+                  </span>
+                )}
+              </div>
             </div>
 
             {/* Content */}
-            <div>
-            <Label htmlFor="content" className="text-sm font-medium mb-2 block">
-              What would you like to share?
-            </Label>
-            <Textarea
-              id="content"
-              placeholder="What would you like to share?"
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              className="min-h-[150px] resize-none"
-              data-testid="input-post-content"
-            />
+            <div className="border-t border-slate-200 mt-6 pt-6">
+              <h3 className="text-sm font-medium text-slate-900 mb-3">Post content</h3>
+              <label className="block text-sm font-medium text-slate-900 mb-1">
+                Caption
+              </label>
+              <textarea
+                id="content"
+                placeholder="Write your caption… (Kurdish, Arabic or English)"
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900/5"
+                rows={4}
+                data-testid="input-post-content"
+              />
+              <div className="mt-1 flex items-center justify-between text-xs text-slate-500">
+                <span>{content.length} characters</span>
+                <button
+                  type="button"
+                  className="inline-flex items-center gap-1 rounded-full border border-slate-200 px-2.5 py-1 hover:bg-slate-50"
+                  onClick={() => console.log('AI suggestion clicked')}
+                >
+                  <span>✨</span>
+                  <span>AI suggestion</span>
+                </button>
+              </div>
             </div>
 
             {/* Image Upload */}
-            <div>
-            <Label className="text-sm font-medium mb-2 block">Media</Label>
-            {imagePreview ? (
-              <div className="relative">
-                <img src={imagePreview} alt="Preview" className="w-full rounded-lg max-h-[300px] object-cover" />
-                <Button
-                  variant="destructive"
-                  size="icon"
-                  className="absolute top-2 right-2"
-                  onClick={() => setImagePreview(null)}
-                  data-testid="button-remove-image"
-                >
-                  <X className="h-4 w-4" />
-                </Button>
+            <div className="border-t border-slate-200 mt-6 pt-6">
+              <h3 className="text-sm font-medium text-slate-900 mb-1">Media</h3>
+              <p className="text-xs text-slate-500 mb-3">
+                Add images, videos or report snapshots to this post.
+              </p>
+              <div className="rounded-2xl border border-slate-200 bg-white p-3">
+                <div className="mb-3 flex items-center justify-between">
+                  <label htmlFor="media-upload">
+                    <button
+                      type="button"
+                      className="inline-flex items-center gap-1 rounded-full border border-dashed border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
+                      onClick={() => document.getElementById('media-upload')?.click()}
+                    >
+                      <span>＋</span>
+                      <span>Add media</span>
+                    </button>
+                  </label>
+                  <input
+                    id="media-upload"
+                    type="file"
+                    accept="image/*,video/*"
+                    className="hidden"
+                    onChange={handleImageUpload}
+                  />
+                  <span className="text-[11px] text-slate-400">
+                    Supported: images, videos, report screenshots.
+                  </span>
+                </div>
+                <div className="flex gap-3 overflow-x-auto">
+                  {mediaItems.map(item => (
+                    <div
+                      key={item.id}
+                      onClick={() => setPrimaryMediaId(item.id)}
+                      className="relative w-32 flex-shrink-0 cursor-pointer rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100"
+                    >
+                      <div className="aspect-[4/3] overflow-hidden rounded-t-xl bg-slate-200">
+                        {item.thumbnailUrl ? (
+                          <img
+                            src={item.thumbnailUrl}
+                            alt={item.label}
+                            className="h-full w-full object-cover"
+                          />
+                        ) : (
+                          <div className="flex h-full items-center justify-center text-[11px] text-slate-500">
+                            No preview
+                          </div>
+                        )}
+                      </div>
+                      <div className="px-2 py-1.5">
+                        <p className="line-clamp-2 text-[11px] font-medium text-slate-800">
+                          {item.label}
+                        </p>
+                        <p className="mt-0.5 text-[10px] uppercase tracking-wide text-slate-400">
+                          {item.type === "report"
+                            ? "Report snapshot"
+                            : item.type === "video"
+                              ? "Video"
+                              : "Image"}
+                        </p>
+                      </div>
+                      {primaryMediaId === item.id && (
+                        <div className="absolute left-1 top-1 rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-medium text-primary-foreground">
+                          Primary
+                        </div>
+                      )}
+                      {/* Remove button */}
+                      <button
+                        type="button"
+                        className="absolute right-1 top-1 rounded-full bg-black/70 px-1.5 py-0.5 text-[10px] text-white hover:bg-black/90"
+                        onClick={e => {
+                          e.stopPropagation();
+                          setMediaItems(items => items.filter(m => m.id !== item.id));
+                          if (primaryMediaId === item.id) {
+                            setPrimaryMediaId(null);
+                          }
+                        }}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+                </div>
               </div>
-            ) : (
-              <label
-                htmlFor="image-upload"
-                className="flex flex-col items-center justify-center gap-2 p-8 border-2 border-dashed border-border rounded-lg cursor-pointer hover-elevate"
-                data-testid="dropzone-image"
-              >
-                <Upload className="h-8 w-8 text-muted-foreground" />
-                <span className="text-sm text-muted-foreground">Drag & drop or select a file</span>
-                <input
-                  id="image-upload"
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handleImageUpload}
-                  data-testid="input-image-upload"
-                />
-              </label>
-            )}
             </div>
 
             {/* Schedule */}
-            <div className="flex gap-4">
-            <div className="flex-1">
-              <Label className="text-sm font-medium mb-2 block">Schedule Date</Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" className="w-full justify-start" data-testid="button-select-date">
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {selectedDate ? format(selectedDate, 'PPP') : 'Pick a date'}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
-                  <Calendar mode="single" selected={selectedDate} onSelect={setSelectedDate} initialFocus />
-                </PopoverContent>
-              </Popover>
-            </div>
-            <div className="w-32">
-              <Label htmlFor="time" className="text-sm font-medium mb-2 block">
-                Time
-              </Label>
-              <input
-                id="time"
-                type="time"
-                value={selectedTime}
-                onChange={(e) => setSelectedTime(e.target.value)}
-                className="w-full h-9 rounded-md border border-input bg-background px-3 py-1 text-sm"
-                data-testid="input-time"
-              />
-            </div>
+            <div className="border-t border-slate-200 mt-6 pt-6">
+              <h3 className="text-sm font-medium text-slate-900 mb-4">Schedule</h3>
+              <div className="flex gap-4">
+                <div className="flex-1">
+                  <Label className="text-sm font-medium mb-2 block">Schedule Date</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" className="w-full justify-start" data-testid="button-select-date">
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {selectedDate ? format(selectedDate, 'PPP') : 'Pick a date'}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0">
+                      <Calendar mode="single" selected={selectedDate} onSelect={setSelectedDate} initialFocus />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+                <div className="w-32">
+                  <Label htmlFor="time" className="text-sm font-medium mb-2 block">
+                    Time
+                  </Label>
+                  <input
+                    id="time"
+                    type="time"
+                    value={selectedTime}
+                    onChange={(e) => setSelectedTime(e.target.value)}
+                    className="w-full h-9 rounded-md border border-input bg-background px-3 py-1 text-sm"
+                    data-testid="input-time"
+                  />
+                </div>
+              </div>
+
             </div>
 
             {/* Actions */}
-            <div className="flex gap-3 justify-end pt-4 border-t">
-            <Button variant="outline" onClick={() => onOpenChange(false)} data-testid="button-cancel">
-              Cancel
-            </Button>
-            <Button variant="outline" className="gap-2" data-testid="button-ai-assistant">
-              <Sparkles className="h-4 w-4" />
-              AI Assistant
-            </Button>
-            <Button onClick={handleSchedule} data-testid="button-schedule-post">
-              Schedule Post
-            </Button>
+            <div className="flex gap-3 justify-end pt-4 border-t mt-6">
+              <Button variant="outline" onClick={() => onOpenChange(false)} data-testid="button-cancel">
+                Cancel
+              </Button>
+              <Button variant="outline" className="gap-2" data-testid="button-ai-assistant">
+                <Sparkles className="h-4 w-4" />
+                AI Assistant
+              </Button>
+              <Button onClick={handleSchedule} data-testid="button-schedule-post">
+                Schedule Post
+              </Button>
             </div>
           </div>
 
           {/* Right Side - Platform Previews */}
-          <div className="space-y-6">
-          <div>
-            <h3 className="text-lg font-semibold mb-4">Preview</h3>
-            {selectedPlatforms.length === 0 ? (
-              <div className="flex items-center justify-center h-full min-h-[400px] text-center p-8 border-2 border-dashed border-border rounded-lg">
-                <div>
-                  <p className="text-muted-foreground">Select platforms to see preview</p>
+          <div className="space-y-4">
+            <div>
+              <h3 className="text-lg font-semibold mb-4">Preview</h3>
+              {selectedAccountIds.length === 0 ? (
+                <div className="flex items-center justify-center h-full min-h-[400px] text-center p-8 border-2 border-dashed border-border rounded-lg">
+                  <div>
+                    <p className="text-muted-foreground">Select accounts to see preview</p>
+                  </div>
                 </div>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {selectedPlatforms.includes('instagram') && (
-                  <div className="border rounded-lg overflow-hidden bg-white" data-testid="preview-instagram">
-                    <div className="p-3 border-b flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Avatar className="h-8 w-8 border border-gray-300">
-                          <AvatarImage src={connectedAccounts.find(a => a.platform === 'instagram')?.avatar} />
-                          <AvatarFallback>IG</AvatarFallback>
-                        </Avatar>
-                        <span className="font-semibold text-sm">
-                          {connectedAccounts.find(a => a.platform === 'instagram')?.username}
-                        </span>
-                      </div>
-                      <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
-                      </svg>
+              ) : (
+                <>
+                  {/* Platform Switcher */}
+                  {selectedAccountIds.length > 1 && (
+                    <div className="flex gap-2 mb-4">
+                      {Array.from(new Set(connectedAccounts.filter(a => selectedAccountIds.includes(a.id)).map(a => a.platform))).map(platform => (
+                        <button
+                          key={platform}
+                          onClick={() => setPreviewPlatform(platform)}
+                          className={`px-3 py-1.5 text-xs font-medium rounded-full transition-colors ${(previewPlatform || connectedAccounts.find(a => selectedAccountIds.includes(a.id))?.platform) === platform
+                            ? 'bg-primary text-primary-foreground'
+                            : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                            }`}
+                        >
+                          {platform.charAt(0).toUpperCase() + platform.slice(1)}
+                        </button>
+                      ))}
                     </div>
-                    {imagePreview ? (
-                      <div className="aspect-square bg-gray-100">
-                        <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
-                      </div>
-                    ) : (
-                      <div className="aspect-square bg-gray-50 flex items-center justify-center border-b">
-                        <div className="text-center p-6">
-                          <p className="text-sm text-muted-foreground">Nothing to preview, please upload a file</p>
-                        </div>
-                      </div>
-                    )}
-                    <div className="p-3">
-                      <div className="flex items-center gap-4 mb-2">
-                        <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                        </svg>
-                        <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                        </svg>
-                        <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                        </svg>
-                        <svg className="h-6 w-6 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
-                        </svg>
-                      </div>
-                      <p className="text-sm whitespace-pre-wrap">
-                        <span className="font-semibold mr-1">
-                          {connectedAccounts.find(a => a.platform === 'instagram')?.username}
-                        </span>
-                        {content || 'Your post content will appear here...'}
-                      </p>
-                    </div>
-                    <div className="px-3 pb-3 text-xs text-muted-foreground border-t pt-2">Instagram Preview</div>
-                  </div>
-                )}
+                  )}
 
-                {selectedPlatforms.includes('facebook') && (
-                  <div className="border rounded-lg overflow-hidden bg-white shadow-sm" data-testid="preview-facebook">
-                    <div className="p-3">
-                      <div className="flex items-center gap-2 mb-3">
-                        <Avatar className="h-10 w-10">
-                          <AvatarImage src={connectedAccounts.find(a => a.platform === 'facebook')?.avatar} />
-                          <AvatarFallback>FB</AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1">
-                          <div className="font-semibold text-sm">
-                            {connectedAccounts.find(a => a.platform === 'facebook')?.username}
-                          </div>
-                          <div className="text-xs text-muted-foreground">Just now · <svg className="inline h-3 w-3" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-6-3a2 2 0 11-4 0 2 2 0 014 0zm-2 4a5 5 0 00-4.546 2.916A5.986 5.986 0 0010 16a5.986 5.986 0 004.546-2.084A5 5 0 0010 11z" clipRule="evenodd" /></svg> Public</div>
-                        </div>
-                        <svg className="h-5 w-5 text-muted-foreground" fill="currentColor" viewBox="0 0 20 20">
-                          <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
-                        </svg>
-                      </div>
-                      <p className="text-sm whitespace-pre-wrap mb-3">
-                        {content || 'Your post content will appear here...'}
-                      </p>
-                    </div>
-                    {imagePreview ? (
-                      <div className="bg-gray-100">
-                        <img src={imagePreview} alt="Preview" className="w-full object-cover max-h-96" />
-                      </div>
-                    ) : (
-                      <div className="bg-gray-50 border-t border-b flex items-center justify-center min-h-[200px]">
-                        <div className="text-center p-6">
-                          <p className="text-sm text-muted-foreground">Nothing to preview, please upload a file</p>
-                        </div>
-                      </div>
-                    )}
-                    <div className="px-3 py-2 border-t flex items-center gap-6 text-muted-foreground">
-                      <button className="flex items-center gap-2 hover:text-blue-600 transition-colors">
-                        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                        </svg>
-                        <span className="text-sm">Like</span>
-                      </button>
-                      <button className="flex items-center gap-2 hover:text-blue-600 transition-colors">
-                        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                        </svg>
-                        <span className="text-sm">Comment</span>
-                      </button>
-                      <button className="flex items-center gap-2 hover:text-blue-600 transition-colors">
-                        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342c-.400 0-.811.036-1.219.08v2.102H5.5a.5.5 0 00-.5.5v2a.5.5 0 00.5.5h2.965a.5.5 0 00.5-.5v-2.102c.408-.044.819-.08 1.219-.08.416 0 .828.036 1.219.08V18.5a.5.5 0 00.5.5h2.965a.5.5 0 00.5-.5v-2a.5.5 0 00-.5-.5h-1.219c-.391-.044-.803-.08-1.219-.08zm5.632 0c-.4 0-.811.036-1.219.08v2.102H11.5a.5.5 0 00-.5.5v2a.5.5 0 00.5.5h2.965a.5.5 0 00.5-.5v-2.102c.408-.044.819-.08 1.219-.08.416 0 .828.036 1.219.08V18.5a.5.5 0 00.5.5h2.965a.5.5 0 00.5-.5v-2a.5.5 0 00-.5-.5h-1.219c-.391-.044-.803-.08-1.219-.08z" />
-                        </svg>
-                        <span className="text-sm">Share</span>
-                      </button>
-                    </div>
-                    <div className="px-3 pb-3 pt-2 text-xs text-muted-foreground">Facebook Preview</div>
-                  </div>
-                )}
+                  {/* Phone Frame Preview */}
+                  <div className="rounded-3xl border border-slate-300 bg-slate-50 p-3">
+                    <div className="bg-white rounded-2xl overflow-hidden shadow-sm">
+                      {(() => {
+                        const activePlatform = previewPlatform || connectedAccounts.find(a => selectedAccountIds.includes(a.id))?.platform;
+                        const activeAccount = connectedAccounts.find(a => a.platform === activePlatform && selectedAccountIds.includes(a.id));
 
-                {selectedPlatforms.includes('tiktok') && (
-                  <div className="border rounded-lg overflow-hidden bg-black text-white" data-testid="preview-tiktok">
-                    <div className="relative">
-                      {imagePreview ? (
-                        <div className="aspect-[9/16] max-h-[500px] bg-black">
-                          <img src={imagePreview} alt="Preview" className="w-full h-full object-contain" />
-                        </div>
-                      ) : (
-                        <div className="aspect-[9/16] max-h-[500px] bg-gradient-to-br from-gray-900 to-black flex items-center justify-center">
-                          <div className="text-center p-6">
-                            <p className="text-sm text-white/70">Nothing to preview, please upload a file</p>
-                          </div>
-                        </div>
-                      )}
-                      {imagePreview && (
-                        <div className="absolute top-4 right-4 flex flex-col gap-3">
-                          <div className="flex flex-col items-center gap-1">
-                            <div className="h-10 w-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                              <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.12-5.91 3.22-2.34.09-4.68-.31-6.72-1.74-.98-.84-1.8-1.79-2.38-2.93-1.14-1.83-1.61-3.99-1.58-6.15.02-1.4.24-2.8.68-4.12.88-2.65 2.7-4.89 5.32-6.05 1.52-.69 3.17-1.04 4.84-1.18v-.01zm-.47 1.98c-1.5.02-2.99.2-4.43.62-2.22.84-4.07 2.5-5.09 4.65-.82 1.72-1.05 3.63-.68 5.49.37 1.87 1.18 3.63 2.37 5.1 1.19 1.47 2.8 2.68 4.6 3.49 2.27 1.02 4.86 1.18 7.25.5 2.39-.68 4.5-2.25 5.88-4.4 1.38-2.15 1.65-4.68.77-7.05-.88-2.37-2.65-4.4-4.9-5.75-1.25-.75-2.65-1.22-4.08-1.44z"/>
-                              </svg>
+                        if (!activeAccount) return null;
+
+                        // Instagram Preview
+                        if (activePlatform === 'instagram') {
+                          return (
+                            <div className="space-y-0">
+                              {/* Instagram Header */}
+                              <div className="p-3 border-b flex items-center gap-2">
+                                <Avatar className="h-8 w-8">
+                                  <AvatarImage src={activeAccount.avatar} />
+                                  <AvatarFallback>{activeAccount.username[0].toUpperCase()}</AvatarFallback>
+                                </Avatar>
+                                <span className="font-semibold text-sm">{activeAccount.username}</span>
+                              </div>
+
+                              {/* Instagram Media */}
+                              {primaryMedia ? (
+                                <div className="aspect-square bg-gray-100">
+                                  <img src={primaryMedia.thumbnailUrl} alt={primaryMedia.label} className="w-full h-full object-cover" />
+                                </div>
+                              ) : (
+                                <div className="aspect-square bg-gray-50 flex items-center justify-center">
+                                  <p className="text-sm text-muted-foreground">No media selected</p>
+                                </div>
+                              )}
+
+                              {/* Instagram Actions */}
+                              <div className="p-3 space-y-2">
+                                <div className="flex gap-4">
+                                  <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                                  </svg>
+                                  <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                                  </svg>
+                                  <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                                  </svg>
+                                </div>
+                                <p className="text-sm">
+                                  <span className="font-semibold mr-1">{activeAccount.username}</span>
+                                  {content || 'Your post content will appear here...'}
+                                </p>
+                              </div>
+
+                              <div className="px-3 pb-3 text-xs text-muted-foreground border-t pt-2">
+                                Instagram Preview
+                              </div>
                             </div>
-                            <span className="text-xs font-semibold">0</span>
-                          </div>
-                          <div className="flex flex-col items-center gap-1">
-                            <div className="h-10 w-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                              <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                              </svg>
+                          );
+                        }
+
+                        // Facebook Preview
+                        if (activePlatform === 'facebook') {
+                          return (
+                            <div className="space-y-0">
+                              {/* Facebook Header */}
+                              <div className="p-3 border-b">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <Avatar className="h-10 w-10">
+                                    <AvatarImage src={activeAccount.avatar} />
+                                    <AvatarFallback>{activeAccount.username[0].toUpperCase()}</AvatarFallback>
+                                  </Avatar>
+                                  <div>
+                                    <p className="font-semibold text-sm">{activeAccount.username}</p>
+                                    <p className="text-xs text-muted-foreground">Just now · 🌐</p>
+                                  </div>
+                                </div>
+                                {content && (
+                                  <p className="text-sm mb-2">{content}</p>
+                                )}
+                              </div>
+
+                              {/* Facebook Media */}
+                              {primaryMedia ? (
+                                <div className="bg-gray-100">
+                                  <img src={primaryMedia.thumbnailUrl} alt={primaryMedia.label} className="w-full object-cover max-h-96" />
+                                </div>
+                              ) : (
+                                <div className="aspect-video bg-gray-50 flex items-center justify-center">
+                                  <p className="text-sm text-muted-foreground">No media selected</p>
+                                </div>
+                              )}
+
+                              {/* Facebook Reactions */}
+                              <div className="p-3 border-t">
+                                <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                                  <button className="flex items-center gap-1 hover:text-blue-600">
+                                    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5" />
+                                    </svg>
+                                    Like
+                                  </button>
+                                  <button className="flex items-center gap-1 hover:text-blue-600">
+                                    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                                    </svg>
+                                    Comment
+                                  </button>
+                                  <button className="flex items-center gap-1 hover:text-blue-600">
+                                    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                                    </svg>
+                                    Share
+                                  </button>
+                                </div>
+                              </div>
+
+                              <div className="px-3 pb-3 text-xs text-muted-foreground border-t pt-2">
+                                Facebook Preview
+                              </div>
                             </div>
-                            <span className="text-xs font-semibold">0</span>
-                          </div>
-                          <div className="flex flex-col items-center gap-1">
-                            <div className="h-10 w-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                              <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                              </svg>
+                          );
+                        }
+
+                        // TikTok Preview
+                        if (activePlatform === 'tiktok') {
+                          return (
+                            <div className="space-y-0 bg-black">
+                              {/* TikTok Vertical Video */}
+                              <div className="relative aspect-[9/16] bg-gray-900">
+                                {primaryMedia ? (
+                                  <img src={primaryMedia.thumbnailUrl} alt={primaryMedia.label} className="w-full h-full object-cover" />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center">
+                                    <p className="text-sm text-white/70">No media selected</p>
+                                  </div>
+                                )}
+
+                                {/* TikTok Overlay UI */}
+                                <div className="absolute inset-0 flex flex-col justify-end p-3 bg-gradient-to-t from-black/60 to-transparent">
+                                  {/* Bottom Left - Caption and User */}
+                                  <div className="text-white space-y-2 mb-16">
+                                    <div className="flex items-center gap-2">
+                                      <Avatar className="h-8 w-8 border-2 border-white">
+                                        <AvatarImage src={activeAccount.avatar} />
+                                        <AvatarFallback>{activeAccount.username[0].toUpperCase()}</AvatarFallback>
+                                      </Avatar>
+                                      <span className="font-semibold text-sm">@{activeAccount.username}</span>
+                                    </div>
+                                    {content && (
+                                      <p className="text-sm line-clamp-3">{content}</p>
+                                    )}
+                                  </div>
+                                </div>
+
+                                {/* Right Side Actions */}
+                                <div className="absolute right-3 bottom-20 flex flex-col gap-4 items-center text-white">
+                                  <div className="flex flex-col items-center">
+                                    <svg className="h-8 w-8 mb-1" fill="currentColor" viewBox="0 0 24 24">
+                                      <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                                    </svg>
+                                    <span className="text-xs">125K</span>
+                                  </div>
+                                  <div className="flex flex-col items-center">
+                                    <svg className="h-8 w-8 mb-1" fill="currentColor" viewBox="0 0 24 24">
+                                      <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z" />
+                                    </svg>
+                                    <span className="text-xs">1.2K</span>
+                                  </div>
+                                  <div className="flex flex-col items-center">
+                                    <svg className="h-8 w-8 mb-1" fill="currentColor" viewBox="0 0 24 24">
+                                      <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z" />
+                                    </svg>
+                                    <span className="text-xs">Share</span>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className="px-3 py-2 text-xs text-white/50 bg-black">
+                                TikTok Preview
+                              </div>
                             </div>
-                            <span className="text-xs font-semibold">0</span>
-                          </div>
-                          <div className="flex flex-col items-center gap-1">
-                            <div className="h-10 w-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                              <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                              </svg>
-                            </div>
-                            <span className="text-xs font-semibold">0</span>
-                          </div>
-                        </div>
-                      )}
-                      <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/90 via-black/50 to-transparent">
-                        <div className="flex items-center gap-2 mb-2">
-                          <Avatar className="h-8 w-8 border-2 border-white">
-                            <AvatarImage src={connectedAccounts.find(a => a.platform === 'tiktok')?.avatar} />
-                            <AvatarFallback>TT</AvatarFallback>
-                          </Avatar>
-                          <span className="font-semibold text-sm">
-                            @{connectedAccounts.find(a => a.platform === 'tiktok')?.username.replace('@', '')}
-                          </span>
-                        </div>
-                        <p className="text-sm whitespace-pre-wrap">
-                          {content || 'Your post content will appear here...'}
-                        </p>
-                      </div>
+                          );
+                        }
+
+                        // Default fallback
+                        return null;
+                      })()}
                     </div>
-                    <div className="px-3 pb-3 pt-2 text-xs text-white/50">TikTok Preview</div>
                   </div>
-                )}
-              </div>
-            )}
+                </>
+              )}
             </div>
           </div>
         </div>
       </DialogContent>
-    </Dialog>
+    </Dialog >
   );
 }
