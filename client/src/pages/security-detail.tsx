@@ -1,5 +1,6 @@
 import { useRoute, Link } from 'wouter';
 import { Shield, AlertCircle, Clock, Check, AlertTriangle, XCircle, Filter, ArrowRight } from 'lucide-react';
+import { SiFacebook, SiInstagram, SiTiktok } from 'react-icons/si';
 import { useApp } from '@/lib/AppContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -20,6 +21,12 @@ export default function SecurityDetail() {
 
   const [severityFilter, setSeverityFilter] = useState<SeverityLevel | 'all'>('all');
   const [platformFilter, setPlatformFilter] = useState<Platform | 'all'>('all');
+
+  const platformIcons = {
+    facebook: SiFacebook,
+    instagram: SiInstagram,
+    tiktok: SiTiktok,
+  };
 
   const getRecommendedActionText = (title: string) => {
     const normalizedTitle = title.toLowerCase();
@@ -125,9 +132,11 @@ export default function SecurityDetail() {
                 <div className="flex gap-3">
                   {(['tiktok', 'facebook', 'instagram'] as Platform[]).map(p => {
                     const risk = getPlatformRisk(p);
+                    const Icon = platformIcons[p];
                     return (
                       <div key={p} className="flex items-center gap-1.5">
                         <span className={`h-2.5 w-2.5 rounded-full ${risk.dot}`} />
+                        <Icon className="h-3.5 w-3.5 text-muted-foreground" />
                         <span className="capitalize text-sm font-medium text-muted-foreground">{p}</span>
                       </div>
                     );
@@ -169,18 +178,22 @@ export default function SecurityDetail() {
           <div className="flex flex-wrap gap-2 items-center">
             {/* Platform Filter */}
             <div className="flex items-center bg-muted/50 rounded-lg p-1">
-              {(['all', 'tiktok', 'facebook', 'instagram'] as const).map((p) => (
-                <button
-                  key={p}
-                  onClick={() => setPlatformFilter(p)}
-                  className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors capitalize ${platformFilter === p
-                    ? 'bg-black text-white shadow-sm'
-                    : 'text-muted-foreground hover:text-foreground'
-                    }`}
-                >
-                  {p === 'all' ? t.all : p}
-                </button>
-              ))}
+              {(['all', 'tiktok', 'facebook', 'instagram'] as const).map((p) => {
+                const Icon = p !== 'all' ? platformIcons[p] : null;
+                return (
+                  <button
+                    key={p}
+                    onClick={() => setPlatformFilter(p)}
+                    className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors capitalize flex items-center gap-1.5 ${platformFilter === p
+                      ? 'bg-black text-white shadow-sm'
+                      : 'text-muted-foreground hover:text-foreground'
+                      }`}
+                  >
+                    {Icon && <Icon className="h-3.5 w-3.5" />}
+                    {p === 'all' ? t.all : p}
+                  </button>
+                );
+              })}
             </div>
 
             {/* Severity Filter */}
@@ -224,7 +237,15 @@ export default function SecurityDetail() {
                   {/* Header Row */}
                   <div className="flex items-center gap-3 mb-3 text-sm">
                     <div className="flex items-center gap-2 font-medium capitalize">
-                      {warning.platform}
+                      {(() => {
+                        const Icon = platformIcons[warning.platform];
+                        return (
+                          <>
+                            <Icon className="h-4 w-4" />
+                            {warning.platform}
+                          </>
+                        );
+                      })()}
                     </div>
                     <span className="text-muted-foreground/40">|</span>
                     <Badge variant="secondary" className={`${styles.badge} border-0 px-2 py-0.5 h-5 text-[10px] uppercase tracking-wider font-bold`}>

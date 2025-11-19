@@ -213,22 +213,22 @@ export default function Inbox() {
   const handleAISuggestion = () => {
     if (!selectedItem) return;
 
-    const suggestions = selectedItem.type === 'message' 
+    const suggestions = selectedItem.type === 'message'
       ? [
-          `Hi! Thanks for reaching out. How can I help you today?`,
-          `I'd be happy to assist you with that. Let me get back to you with more details.`,
-          `Thanks for your message! I'll look into this and get back to you shortly.`,
-          `I appreciate you reaching out. Let's discuss this further.`,
-        ]
+        `Hi! Thanks for reaching out. How can I help you today?`,
+        `I'd be happy to assist you with that. Let me get back to you with more details.`,
+        `Thanks for your message! I'll look into this and get back to you shortly.`,
+        `I appreciate you reaching out. Let's discuss this further.`,
+      ]
       : [
-          `Thanks for your comment! We're thrilled you enjoyed it. Stay tuned for more great content coming soon!`,
-          `We appreciate your feedback! Check out our latest updates on our profile.`,
-          `Thank you for the support! Make sure to follow us for exclusive updates and behind-the-scenes content.`,
-          `Great question! We'll be sharing more details about this very soon. Thanks for your interest!`,
-          `We love hearing from you! Your support means the world to us. More exciting content on the way!`,
-          `Thanks so much for reaching out! We'll get back to you with more information shortly.`,
-          `Appreciate your engagement! We have some exciting announcements coming up that you won't want to miss.`,
-        ];
+        `Thanks for your comment! We're thrilled you enjoyed it. Stay tuned for more great content coming soon!`,
+        `We appreciate your feedback! Check out our latest updates on our profile.`,
+        `Thank you for the support! Make sure to follow us for exclusive updates and behind-the-scenes content.`,
+        `Great question! We'll be sharing more details about this very soon. Thanks for your interest!`,
+        `We love hearing from you! Your support means the world to us. More exciting content on the way!`,
+        `Thanks so much for reaching out! We'll get back to you with more information shortly.`,
+        `Appreciate your engagement! We have some exciting announcements coming up that you won't want to miss.`,
+      ];
 
     const randomSuggestion = suggestions[Math.floor(Math.random() * suggestions.length)];
     setReplyText(randomSuggestion);
@@ -255,7 +255,7 @@ export default function Inbox() {
     } else if (selectedItem.type === 'message') {
       // For demo, just log the message
       console.log({ type: 'message', itemId: selectedItemId, text: replyText });
-      
+
       toast({
         title: 'Message sent',
         description: `Your message has been sent to ${selectedItem.authorName}`,
@@ -319,9 +319,24 @@ export default function Inbox() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All platforms</SelectItem>
-              <SelectItem value="facebook">Facebook</SelectItem>
-              <SelectItem value="instagram">Instagram</SelectItem>
-              <SelectItem value="tiktok">TikTok</SelectItem>
+              <SelectItem value="facebook">
+                <div className="flex items-center gap-2">
+                  <SiFacebook className="h-3.5 w-3.5" />
+                  Facebook
+                </div>
+              </SelectItem>
+              <SelectItem value="instagram">
+                <div className="flex items-center gap-2">
+                  <SiInstagram className="h-3.5 w-3.5" />
+                  Instagram
+                </div>
+              </SelectItem>
+              <SelectItem value="tiktok">
+                <div className="flex items-center gap-2">
+                  <SiTiktok className="h-3.5 w-3.5" />
+                  TikTok
+                </div>
+              </SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -388,9 +403,8 @@ export default function Inbox() {
                     <div
                       key={item.id}
                       onClick={() => setSelectedItemId(item.id)}
-                      className={`p-4 cursor-pointer hover-elevate transition-colors ${
-                        isSelected ? 'bg-accent' : ''
-                      }`}
+                      className={`p-4 cursor-pointer hover-elevate transition-colors ${isSelected ? 'bg-accent' : ''
+                        }`}
                       data-testid={`item-${item.id}`}
                     >
                       <div className="flex items-start gap-3">
@@ -571,11 +585,10 @@ export default function Inbox() {
                           className={`flex ${threadItem.isFromUser ? 'justify-end' : 'justify-start'}`}
                         >
                           <div
-                            className={`max-w-[75%] rounded-2xl px-3 py-2 text-sm ${
-                              threadItem.isFromUser
+                            className={`max-w-[75%] rounded-2xl px-3 py-2 text-sm ${threadItem.isFromUser
                                 ? 'bg-emerald-50 dark:bg-emerald-950'
                                 : 'bg-slate-100 dark:bg-slate-800'
-                            }`}
+                              }`}
                           >
                             <p className="text-sm">{threadItem.content}</p>
                             <p className="text-xs text-muted-foreground mt-1">
