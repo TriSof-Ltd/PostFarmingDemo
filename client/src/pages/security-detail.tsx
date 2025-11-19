@@ -1,6 +1,5 @@
 import { useRoute, Link } from 'wouter';
 import { Shield, AlertCircle, Clock, Check, AlertTriangle, XCircle, Filter, ArrowRight } from 'lucide-react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useApp } from '@/lib/AppContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -22,12 +21,13 @@ export default function SecurityDetail() {
   const [severityFilter, setSeverityFilter] = useState<SeverityLevel | 'all'>('all');
   const [platformFilter, setPlatformFilter] = useState<Platform | 'all'>('all');
 
-  // Mock state for action status
-  const [actionStatus, setActionStatus] = useState<Record<number, 'notStarted' | 'inProgress' | 'done'>>({
-    1: 'notStarted',
-    2: 'inProgress',
-    3: 'done'
-  });
+  const getRecommendedActionText = (title: string) => {
+    const normalizedTitle = title.toLowerCase();
+    if (normalizedTitle.includes('bad actor')) return t.badActorProximityAction;
+    if (normalizedTitle.includes('cold ad')) return t.coldAdAccountAction;
+    if (normalizedTitle.includes('follower')) return t.followerQualityAction;
+    return t.badActorProximityAction; // Fallback
+  };
 
   if (!client || !health) {
     return <div>Client not found</div>;
@@ -75,40 +75,7 @@ export default function SecurityDetail() {
       return severityOrder[a.severity] - severityOrder[b.severity];
     });
 
-  const recommendedActions = [
-    { id: 1, text: t.pauseNewTiktokSpend, link: '#warning-tiktok', tag: 'TikTok · Bad actor proximity' },
-    { id: 2, text: t.reduceAggressiveCopy, link: '#warning-fb', tag: 'Facebook · Disapproved ads' },
-    { id: 3, text: t.slowDownFollowerGrowth, link: '#warning-insta', tag: 'Instagram · Growth spike' },
-  ];
 
-  const updateActionStatus = (id: number, status: 'notStarted' | 'inProgress' | 'done') => {
-    setActionStatus(prev => ({ ...prev, [id]: status }));
-  };
-
-  const getRecommendedActionText = (title: string) => {
-    const normalizedTitle = title.toLowerCase();
-    if (normalizedTitle.includes('bad actor')) return t.badActorProximityAction;
-    if (normalizedTitle.includes('cold ad')) return t.coldAdAccountAction;
-    if (normalizedTitle.includes('follower')) return t.followerQualityAction;
-    return t.badActorProximityAction; // Fallback
-  };
-
-  const getStatusColor = (status: 'notStarted' | 'inProgress' | 'done') => {
-    switch (status) {
-      case 'done': return 'bg-green-100 text-green-700 hover:bg-green-200';
-      case 'inProgress': return 'bg-blue-100 text-blue-700 hover:bg-blue-200';
-      default: return 'bg-gray-100 text-gray-700 hover:bg-gray-200';
-    }
-  };
-
-  const scrollToWarning = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
-    e.preventDefault();
-    const element = document.getElementById(id.replace('#', ''));
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-      // Optional: highlight effect could be added here
-    }
-  };
 
   const criticalRiskCount = health.warnings.filter(w => w.severity === 'critical').length;
 
@@ -190,56 +157,6 @@ export default function SecurityDetail() {
         </CardContent>
       </Card>
 
-      {/* Recommended Actions (Today) */}
-      <div className="space-y-4">
-        <div>
-          <h2 className="text-lg font-semibold">{t.recommendedActionsToday}</h2>
-          <p className="text-sm text-muted-foreground">{t.quickSteps}</p>
-        </div>
-        <div className="grid gap-4 md:grid-cols-3">
-          {recommendedActions.map((action, index) => (
-            <Card key={action.id} className="bg-white border-l-4 border-l-blue-500 relative group hover:shadow-md transition-shadow">
-              <CardContent className="p-4 flex flex-col h-full justify-between">
-                <div className="space-y-3">
-                  <div className="flex justify-between items-start">
-                    <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-600">
-                      {index + 1}
-                    </div>
-                    <Select
-                      value={actionStatus[action.id]}
-                      onValueChange={(value: any) => updateActionStatus(action.id, value)}
-                    >
-                      <SelectTrigger className={`h-auto min-h-0 w-auto text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide border-0 focus:ring-0 focus:ring-offset-0 gap-1 ${getStatusColor(actionStatus[action.id])}`}>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="notStarted">{t.notStarted}</SelectItem>
-                        <SelectItem value="inProgress">{t.inProgress}</SelectItem>
-                        <SelectItem value="done">{t.done}</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div>
-                    <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-                      {action.tag}
-                    </div>
-                    <p className="text-sm font-medium leading-snug">{action.text}</p>
-                  </div>
-                </div>
-
-                <a
-                  href={action.link}
-                  onClick={(e) => scrollToWarning(e, action.link)}
-                  className="text-xs font-medium text-muted-foreground hover:text-foreground hover:underline flex items-center gap-1 mt-4 group-hover:text-blue-600 transition-colors"
-                >
-                  {t.whyItMatters} <ArrowRight className="h-3 w-3" />
-                </a>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
 
       {/* Active Warnings */}
       <div className="space-y-6">
