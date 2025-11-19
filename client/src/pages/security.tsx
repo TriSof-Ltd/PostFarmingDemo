@@ -15,15 +15,10 @@ export default function Security() {
   const { clientHealth } = state;
   const t = translations[language];
 
-  const getStatusColor = (status: HealthStatus) => {
-    switch (status) {
-      case 'healthy':
-        return 'bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400';
-      case 'attention':
-        return 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-400';
-      case 'high-risk':
-        return 'bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-400';
-    }
+  const getStatusFromScore = (score: number): HealthStatus => {
+    if (score >= 90) return 'healthy';
+    if (score >= 70) return 'attention';
+    return 'high-risk';
   };
 
   const getStatusIcon = (status: HealthStatus) => {
@@ -47,6 +42,17 @@ export default function Security() {
         return t.highRisk;
       default:
         return status;
+    }
+  };
+
+  const getStatusColor = (status: HealthStatus) => {
+    switch (status) {
+      case 'healthy':
+        return 'bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400';
+      case 'attention':
+        return 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-400';
+      case 'high-risk':
+        return 'bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-400';
     }
   };
 
@@ -117,10 +123,17 @@ export default function Security() {
                     </div>
 
                     <div className="col-span-2 flex items-center">
-                      <Badge variant="secondary" className={`gap-1.5 ${getStatusColor(health.status)}`}>
-                        {getStatusIcon(health.status)}
-                        <span className="capitalize">{getStatusLabel(health.status)}</span>
-                      </Badge>
+                      {(() => {
+                        const calculatedStatus = getStatusFromScore(health.overallScore);
+                        return (
+                          <Badge variant="secondary" className={`gap-1.5 ${getStatusColor(calculatedStatus)}`}>
+                            <span className="font-bold">{health.overallScore}</span>
+                            <span>·</span>
+                            {getStatusIcon(calculatedStatus)}
+                            <span className="capitalize">{getStatusLabel(calculatedStatus)}</span>
+                          </Badge>
+                        );
+                      })()}
                     </div>
 
                     <div className="col-span-5 flex items-center">

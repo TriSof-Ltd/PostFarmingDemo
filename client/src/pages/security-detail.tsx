@@ -130,6 +130,16 @@ export default function SecurityDetail() {
             <h1 className="text-3xl font-semibold">{t.securityTitle} – {client.name}</h1>
           </div>
         </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => {
+            localStorage.removeItem('post-farming-data');
+            window.location.reload();
+          }}
+        >
+          Clear Cache & Reload
+        </Button>
       </div>
 
       {/* Overall Health Card */}

@@ -341,7 +341,7 @@ export function generateMockData(): AppState {
     {
       clientId: '1',
       overallScore: 65,
-      status: 'attention',
+      status: 'high-risk',
       lastScan: new Date('2025-11-17T16:00:00'),
       warnings: [
         {
@@ -384,21 +384,11 @@ export function generateMockData(): AppState {
     },
     {
       clientId: '3',
-      overallScore: 68,
-      status: 'high-risk',
+      overallScore: 92,
+      status: 'healthy',
       lastScan: new Date('2025-11-17T14:45:00'),
-      warnings: [
-        {
-          id: 'w4',
-          platform: 'facebook',
-          category: 'Environment',
-          severity: 'critical',
-          title: 'disapproved ads',
-          description: 'Meta: 2 disapproved ads. TikTok Ads: shared card with suspended account. Critical risk of account suspension.',
-          timestamp: new Date('2025-11-17T06:00:00'),
-        },
-      ],
-      recentIssues: 'Meta: 2 disapproved ads. TikTok Ads: shared card with suspended account.',
+      warnings: [],
+      recentIssues: 'No active violations. All platforms operating normally.',
     },
   ];
 
